@@ -13,19 +13,19 @@ export const EnvironmentConfigSchema = z.object({
   REQUEST_TIMEOUT: z.string()
     .transform(val => parseInt(val, 10))
     .pipe(z.number().positive())
-    .default('30000'),
+    .default(30000),
   RETRY_ATTEMPTS: z.string()
     .transform(val => parseInt(val, 10))
     .pipe(z.number().min(0).max(5))
-    .default('3'),
+    .default(3),
   MAX_CONCURRENT_REQUESTS: z.string()
     .transform(val => parseInt(val, 10))
     .pipe(z.number().positive())
-    .default('10'),
+    .default(10),
   RATE_LIMIT_PER_MINUTE: z.string()
     .transform(val => parseInt(val, 10))
     .pipe(z.number().positive())
-    .default('60'),
+    .default(60),
   DEBUG: z.string().optional()
 });
 
@@ -47,7 +47,7 @@ export function validateAndProcessEnvironment(): ProcessedEnvironment {
   const result = EnvironmentConfigSchema.safeParse(process.env);
 
   if (!result.success) {
-    const errors = result.error.errors.map(err =>
+    const errors = result.error.issues.map((err: z.core.$ZodIssue) =>
       `${err.path.join('.')}: ${err.message}`
     ).join('\n');
     throw new Error(`Environment validation failed:\n${errors}`);

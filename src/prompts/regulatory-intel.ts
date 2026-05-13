@@ -20,8 +20,8 @@ export class RegulatoryIntelPrompt extends EnhancedPrompt<RegulatoryIntelArgs> {
       'fda_regulatory_due_diligence',
       'Comprehensive regulatory intelligence analysis using FDA databases by brand name or company name. Analyzes originator identification, safety surveillance, demographic risks, regulatory timeline, and supply chain assessment for pharmaceutical regulatory analysis.',
       {
-        drug_name: (RegulatoryIntelArgsSchema.innerType() as any).shape.drug_name.describe('Name of the drug to analyze (Brand name)'),
-        company_name: (RegulatoryIntelArgsSchema.innerType() as any).shape.company_name.describe('Name of the company to analyze')
+        drug_name: (RegulatoryIntelArgsSchema as any).shape.drug_name.describe('Name of the drug to analyze (Brand name)'),
+        company_name: (RegulatoryIntelArgsSchema as any).shape.company_name.describe('Name of the company to analyze')
       }
     );
   }

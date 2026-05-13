@@ -19,8 +19,8 @@ export class GenericCompetitionPrompt extends EnhancedPrompt<GenericCompetitionA
       'fda_generic_competition_landscape',
       'Comprehensive generic competition assessment for Orange Book FDA analysis. Evaluates market entry patterns, competitive landscape, reference vs generic drug distinction, and market maturity indicators.',
       {
-        brand_drug: (GenericCompetitionArgsSchema.innerType() as any).shape.brand_drug.describe('Brand name of the drug to analyze for generic competition (provide either brand_drug or generic_name)'),
-        generic_name: (GenericCompetitionArgsSchema.innerType() as any).shape.generic_name.describe('Generic name of the drug to analyze for generic competition (provide either brand_drug or generic_name)')
+        brand_drug: (GenericCompetitionArgsSchema as any).shape.brand_drug.describe('Brand name of the drug to analyze for generic competition (provide either brand_drug or generic_name)'),
+        generic_name: (GenericCompetitionArgsSchema as any).shape.generic_name.describe('Generic name of the drug to analyze for generic competition (provide either brand_drug or generic_name)')
       }
     );
   }

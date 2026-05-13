@@ -66,7 +66,7 @@ export const McpArraySchema = z.object({
  */
 export const McpObjectSchema = z.object({
   type: z.literal('object'),
-  properties: z.record(z.any()),
+  properties: z.record(z.string(), z.any()),
   required: z.array(z.string()).optional(),
   additionalProperties: z.boolean().default(false),
   description: z.string().optional()
@@ -211,7 +211,7 @@ export const JsonRpcResponseSchema = z.union([
  */
 export const McpToolInputSchema = z.object({
   type: z.literal('object'),
-  properties: z.record(z.any()),
+  properties: z.record(z.string(), z.any()),
   required: z.array(z.string()).optional(),
   additionalProperties: z.boolean().default(false)
 });
@@ -274,7 +274,7 @@ export const McpServerCapabilitiesSchema = z.object({
 
   completions: z.object({}).optional(),
 
-  experimental: z.record(z.any()).optional()
+  experimental: z.record(z.string(), z.any()).optional()
 });
 
 /**
@@ -340,9 +340,7 @@ export const McpFdaRequestParamsSchema = z.object({
     'search_purple_book',
     'get_biosimilar_interchangeability'
   ], {
-    errorMap: () => ({
-      message: 'Method must be one of: lookup_drug, lookup_device, search_orange_book, get_therapeutic_equivalents, get_patent_exclusivity, analyze_patent_cliff, search_purple_book, get_biosimilar_interchangeability'
-    })
+    error: () => 'Method must be one of: lookup_drug, lookup_device, search_orange_book, get_therapeutic_equivalents, get_patent_exclusivity, analyze_patent_cliff, search_purple_book, get_biosimilar_interchangeability'
   }),
 
   search_term: FdaSearchTermSchema,
@@ -453,7 +451,7 @@ export function validateMcpData<T>(
     if (result.success) {
       return { success: true, data: result.data };
     } else {
-      const errors = result.error.errors.map(err => {
+      const errors = result.error.issues.map((err: z.core.$ZodIssue) => {
         const path = err.path.length > 0 ? `${err.path.join('.')}: ` : '';
         return `${path}${err.message}`;
       });

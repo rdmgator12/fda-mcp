@@ -31,10 +31,10 @@ export const EnvironmentSchema = z.object({
   LOG_LEVEL: LogLevelSchema.default('info'),
   FDA_API_KEY: z.string().optional(),
   FDA_API_BASE_URL: z.string().url().default('https://api.fda.gov'),
-  REQUEST_TIMEOUT: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default('30000'),
-  RETRY_ATTEMPTS: z.string().transform(val => parseInt(val, 10)).pipe(z.number().min(0).max(5)).default('3'),
-  MAX_CONCURRENT_REQUESTS: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default('10'),
-  RATE_LIMIT_PER_MINUTE: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default('60')
+  REQUEST_TIMEOUT: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default(30000),
+  RETRY_ATTEMPTS: z.string().transform(val => parseInt(val, 10)).pipe(z.number().min(0).max(5)).default(3),
+  MAX_CONCURRENT_REQUESTS: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default(10),
+  RATE_LIMIT_PER_MINUTE: z.string().transform(val => parseInt(val, 10)).pipe(z.number().positive()).default(60)
 });
 
 // ============================================================================
@@ -50,7 +50,7 @@ export const RequestMetadataSchema = z.object({
 export const ErrorResponseSchema = z.object({
   error: z.string(),
   code: z.string().optional(),
-  details: z.record(z.any()).optional(),
+  details: z.record(z.string(), z.any()).optional(),
   success: z.literal(false),
   requestId: z.string().optional()
 });
@@ -80,7 +80,7 @@ export const ToolExecutionContextSchema = z.object({
   requestId: z.string().uuid(),
   startTime: z.date(),
   toolName: z.string(),
-  parameters: z.record(z.any())
+  parameters: z.record(z.string(), z.any())
 });
 
 export const ToolResultSchema = z.object({
@@ -115,7 +115,7 @@ export function validateEnvironment(): z.infer<typeof EnvironmentSchema> {
   const result = EnvironmentSchema.safeParse(process.env);
 
   if (!result.success) {
-    const errors = result.error.errors.map(err =>
+    const errors = result.error.issues.map((err: z.core.$ZodIssue) =>
       `${err.path.join('.')}: ${err.message}`
     ).join('\n');
     throw new Error(`Environment validation failed:\n${errors}`);

@@ -45,7 +45,7 @@ export class FdaMcpServer {
         description: 'FDA MCP Server for drug and device information lookup with comprehensive safety and regulatory intelligence'
       },
       {
-        capabilities: this.lifecycleManager.getServerCapabilities()
+        capabilities: this.lifecycleManager.getServerCapabilities() as any
       }
     );
 

@@ -102,7 +102,7 @@ export class ConfigManager {
 
     const result = configSchema.safeParse(this.config);
     if (!result.success) {
-      const errors = result.error.errors.map(err =>
+      const errors = result.error.issues.map((err: z.core.$ZodIssue) =>
         `${err.path.join('.')}: ${err.message}`
       ).join('\n');
       throw new Error(`Configuration validation failed:\n${errors}`);

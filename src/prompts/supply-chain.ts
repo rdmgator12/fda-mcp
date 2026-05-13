@@ -18,8 +18,8 @@ export class SupplyChainPrompt extends EnhancedPrompt<SupplyChainArgs> {
       'fda_supply_chain_risk_assessment',
       'Supply Chain Risk Assessment for drug manufacturing and availability. Analyzes current shortages, therapeutic vulnerability patterns, supplier concentration risks, manufacturing resilience, and discontinuation risks.',
       {
-        drug_name: (SupplyChainArgsSchema.innerType() as any).shape.drug_name.describe('Name of the drug to analyze for supply chain risks (provide either drug_name or therapeutic_area)'),
-        therapeutic_area: (SupplyChainArgsSchema.innerType() as any).shape.therapeutic_area.describe('Therapeutic area to analyze for supply chain risks (provide either drug_name or therapeutic_area)')
+        drug_name: (SupplyChainArgsSchema as any).shape.drug_name.describe('Name of the drug to analyze for supply chain risks (provide either drug_name or therapeutic_area)'),
+        therapeutic_area: (SupplyChainArgsSchema as any).shape.therapeutic_area.describe('Therapeutic area to analyze for supply chain risks (provide either drug_name or therapeutic_area)')
       }
     );
   }

@@ -30,12 +30,12 @@ export async function downloadWithProgress(
   });
 
   // Check content type for Purple Book
-  const contentType = response.headers['content-type'] || '';
+  const contentType = String(response.headers['content-type'] || '');
   if (name === 'Purple Book' && !contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') && !contentType.includes('application/vnd.ms-excel')) {
     throw new Error(`Invalid content type: ${contentType}. Expected Excel file.`);
   }
 
-  const totalSize = parseInt(response.headers['content-length'] || '0', 10);
+  const totalSize = parseInt(String(response.headers['content-length'] || '0'), 10);
   let downloadedSize = 0;
 
   const writer = fs.createWriteStream(outputPath);

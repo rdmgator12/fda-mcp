@@ -217,7 +217,7 @@ export abstract class BaseTool<TParams = Record<string, unknown>> {
     const result = this.schema.safeParse(params);
 
     if (!result.success) {
-      const errors = result.error.errors.map(err => {
+      const errors = result.error.issues.map((err: z.core.$ZodIssue) => {
         const path = err.path.length > 0 ? `${err.path.join('.')}: ` : '';
         return `${path}${err.message}`;
       });
@@ -234,7 +234,7 @@ export abstract class BaseTool<TParams = Record<string, unknown>> {
       throw mcpError;
     }
 
-    return result.data;
+    return result.data as TParams;
   }
 
   /**

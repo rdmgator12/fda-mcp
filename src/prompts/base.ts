@@ -194,7 +194,7 @@ export abstract class BasePrompt<TParams = Record<string, unknown>> {
       const result = schema.safeParse(value);
 
       if (!result.success) {
-        const errors = result.error.errors.map(err => err.message).join(', ');
+        const errors = result.error.issues.map((err: z.core.$ZodIssue) => err.message).join(', ');
         throw new Error(`Parameter '${key}' validation failed: ${errors}`);
       }
 
