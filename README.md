@@ -23,11 +23,20 @@ A comprehensive Model Context Protocol (MCP) server that provides advanced pharm
     "fda-mcp-server": {
       "command": "node",
       "args": ["/path/to/fda-mcp-server/build/index.js"],
-      "env": {}
+      "env": {
+        "FDA_API_KEY": "your-key-here"
+      }
     }
   }
 }
 ```
+
+### openFDA API key
+
+`FDA_API_KEY` is optional. Without one, openFDA enforces a 1,000 request/day limit
+per IP; with a key, the limit is 120,000 request/day per key. Register a free key
+at <https://open.fda.gov/apis/authentication/>. Copy `.env.example` to `.env` and
+fill in your value for local development.
 
 ## What's New: Orange Book & Purple Book Integration
 
