@@ -131,7 +131,7 @@ export class OrangePurpleBookService {
       const orangeBook = parseOrangeBook(orangeBookPath);
 
       // Parse Purple Book
-      const purpleBook = parsePurpleBook(purpleBookPath);
+      const purpleBook = await parsePurpleBook(purpleBookPath);
 
       // Build database
       const metadata: DatabaseMetadata = {

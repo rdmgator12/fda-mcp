@@ -2,75 +2,113 @@
  * Parse Purple Book Excel file
  */
 
-import XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import type { PurpleBookBiologic } from '../../types/orange-purple-book/index.js';
 import { logger } from '../../logging/index.js';
 
 /**
- * Normalize cell value to string
+ * FDA Purple Book column layout (1-indexed, as of April 2026 monthly download):
+ *   1: N/R/U flag        2: Applicant            3: BLA Number       4: Proprietary Name
+ *   5: Proper Name       6: License Type         7: Strength         8: Dosage Form
+ *   9: Route of Admin   10: Product Presentation 11: Marketing Status 12: Licensure
+ *  13: Approval Date    14: Inter. Approval Date 15: Ref Proper Name  16: Ref Proprietary Name
+ *  17: Suppl. Number    18: Submission Type      19: Inter. Suppl.    20: License Number
+ *  21: Product Number   22: Center               23: Date of First Lic 24: Exclusivity Exp
+ *  25: First Interch.   26: Ref Exclusivity Exp  27: Orphan Excl. Exp
+ *
+ * Rows 1-3 are preamble (title + "N/R/U" legend). Row 4 is the header row.
+ * Data starts at row 5.
  */
-function getCellValue(row: any, key: string): string {
-  const value = row[key];
-  if (value === null || value === undefined) {
-    return '';
+const COL = {
+  applicant: 2,
+  blaNumber: 3,
+  proprietaryName: 4,
+  properName: 5,
+  licenseType: 6,
+  strength: 7,
+  dosageForm: 8,
+  routeOfAdmin: 9,
+  marketingStatus: 11,
+  licensureStatus: 12,
+  approvalDate: 13,
+  refProductProperName: 15,
+  refProductProprietaryName: 16,
+  dateOfFirstLicensure: 23,
+  exclusivityExp: 24,
+  firstInterchangeableExclusivity: 25,
+  orphanExclusivityExp: 27,
+} as const;
+
+const DATA_START_ROW = 5;
+
+/**
+ * Normalize a cell value to a trimmed string.
+ * Handles ExcelJS's varied value shapes: primitives, Dates, rich text, formula results, hyperlinks.
+ */
+function getCellString(row: ExcelJS.Row, col: number): string {
+  const value = row.getCell(col).value;
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'object') {
+    const v = value as unknown as Record<string, unknown>;
+    if (Array.isArray(v.richText)) {
+      return (v.richText as Array<{ text: string }>).map((r) => r.text).join('').trim();
+    }
+    if (v.result !== undefined && v.result !== null) return String(v.result).trim();
+    if (v.text !== undefined && v.text !== null) return String(v.text).trim();
   }
   return String(value).trim();
 }
 
-/**
- * Parse Purple Book Excel file
- * The Excel file has a title row, then headers in row 2, then data starts at row 3
- */
-export function parsePurpleBook(excelPath: string): PurpleBookBiologic[] {
+export async function parsePurpleBook(excelPath: string): Promise<PurpleBookBiologic[]> {
   logger.info('Parsing Purple Book Excel file...');
 
-  const workbook = XLSX.readFile(excelPath);
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(excelPath);
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) {
+    throw new Error('Purple Book workbook has no worksheets');
+  }
 
-  // Convert to JSON, skipping the first 2 rows (title + header row)
-  const rows = XLSX.utils.sheet_to_json(worksheet, { range: 2 });
-
-  logger.info(`Found ${rows.length} rows in Purple Book`);
+  const totalRows = worksheet.rowCount;
+  const dataRowCount = Math.max(0, totalRows - (DATA_START_ROW - 1));
+  logger.info(`Found ${dataRowCount} rows in Purple Book`);
 
   const biologics: PurpleBookBiologic[] = [];
 
-  for (const row of rows) {
-    const rowData: any = row;
+  for (let rowNum = DATA_START_ROW; rowNum <= totalRows; rowNum++) {
+    const row = worksheet.getRow(rowNum);
 
-    // The actual column names are in __EMPTY, __EMPTY_1, etc.
-    // Row 2 tells us: __EMPTY = Applicant, __EMPTY_1 = BLA Number, etc.
-    const applicant = getCellValue(rowData, '__EMPTY');
-    const blaNumber = getCellValue(rowData, '__EMPTY_1');
-    const proprietaryName = getCellValue(rowData, '__EMPTY_2');
-    const properName = getCellValue(rowData, '__EMPTY_3');
-    const blaType = getCellValue(rowData, '__EMPTY_4');
-    const strength = getCellValue(rowData, '__EMPTY_5');
-    const dosageForm = getCellValue(rowData, '__EMPTY_6');
-    const routeOfAdmin = getCellValue(rowData, '__EMPTY_7');
-    const marketingStatus = getCellValue(rowData, '__EMPTY_9');
-    const licensureStatus = getCellValue(rowData, '__EMPTY_10');
-    const approvalDate = getCellValue(rowData, '__EMPTY_11');
-    const refProductProperName = getCellValue(rowData, '__EMPTY_12');
-    const refProductProprietaryName = getCellValue(rowData, '__EMPTY_13');
-    const dateOfFirstLicensure = getCellValue(rowData, '__EMPTY_19');
-    const exclusivityExpDate = getCellValue(rowData, '__EMPTY_20');
-    const firstInterchangeableExclusivity = getCellValue(rowData, '__EMPTY_21');
-    const orphanExclusivity = getCellValue(rowData, '__EMPTY_23');
+    const applicant = getCellString(row, COL.applicant);
+    const blaNumber = getCellString(row, COL.blaNumber);
+    if (!blaNumber) continue;
 
-    if (!blaNumber) {
-      continue; // Skip rows without BLA number
-    }
+    const proprietaryName = getCellString(row, COL.proprietaryName);
+    const properName = getCellString(row, COL.properName);
+    const licenseType = getCellString(row, COL.licenseType);
+    const strength = getCellString(row, COL.strength);
+    const dosageForm = getCellString(row, COL.dosageForm);
+    const routeOfAdmin = getCellString(row, COL.routeOfAdmin);
+    const marketingStatus = getCellString(row, COL.marketingStatus);
+    const licensureStatus = getCellString(row, COL.licensureStatus);
+    const approvalDate = getCellString(row, COL.approvalDate);
+    const refProductProperName = getCellString(row, COL.refProductProperName);
+    const refProductProprietaryName = getCellString(row, COL.refProductProprietaryName);
+    const dateOfFirstLicensure = getCellString(row, COL.dateOfFirstLicensure);
+    const exclusivityExpDate = getCellString(row, COL.exclusivityExp);
+    const firstInterchangeableExclusivity = getCellString(row, COL.firstInterchangeableExclusivity);
+    const orphanExclusivity = getCellString(row, COL.orphanExclusivityExp);
 
-    // Determine if this is a biosimilar (351(k) BLA type or has reference product)
-    // Reference products have "N/A" or empty reference product fields
-    const hasReferenceProduct = refProductProperName && refProductProperName !== 'N/A' && refProductProperName !== '';
-    const isBiosimilar = blaType === '351(k)' || hasReferenceProduct;
+    const cleanedRefProductProperName =
+      refProductProperName && refProductProperName !== 'N/A' ? refProductProperName.trim() : '';
+    const hasReferenceProduct = cleanedRefProductProperName !== '';
+    const isBiosimilar = licenseType.startsWith('351(k)') || hasReferenceProduct;
+    const isInterchangeable =
+      licenseType.toLowerCase().includes('interchangeable') || !!firstInterchangeableExclusivity;
 
-    // Check for interchangeability
-    const isInterchangeable = !!firstInterchangeableExclusivity && firstInterchangeableExclusivity !== '';
-
-    const biologic: PurpleBookBiologic = {
+    biologics.push({
       blaNumber,
       properName,
       proprietaryName,
@@ -78,22 +116,20 @@ export function parsePurpleBook(excelPath: string): PurpleBookBiologic[] {
       licensureStatus,
       marketingStatus,
       applicant,
-      applicantFullName: applicant, // They're the same in this file
+      applicantFullName: applicant,
       strength,
       dosageForm,
       routeOfAdministration: routeOfAdmin,
-      referenceProduct: '', // Not directly in the file, we'd need to match by reference product names
-      referenceProductProperName: refProductProperName,
+      referenceProduct: '',
+      referenceProductProperName: cleanedRefProductProperName,
       referenceProductProprietaryName: refProductProprietaryName,
       biosimilar: isBiosimilar ? 'Yes' : 'No',
       interchangeable: isInterchangeable ? 'Yes' : 'No',
       interchangeableDate: firstInterchangeableExclusivity,
       exclusivityExpirationDate: exclusivityExpDate,
       orphanExclusivity,
-      pediatricExclusivity: '', // Not in this version of the file
-    };
-
-    biologics.push(biologic);
+      pediatricExclusivity: '',
+    });
   }
 
   logger.info(`Parsed ${biologics.length} biologics from Purple Book`);
