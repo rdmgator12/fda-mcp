@@ -57,7 +57,8 @@
     "flatted": "^3.4.2",
     "follow-redirects": "^1.16.0",
     "js-yaml": "^4.1.1",
-    "picomatch": "^2.3.2"
+    "picomatch": "^2.3.2",
+    "uuid": "^11.1.1"
   },
   "engines": {
     "node": ">=18.0.0"
