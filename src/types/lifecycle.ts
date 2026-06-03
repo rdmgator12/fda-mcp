@@ -45,9 +45,9 @@ export interface ServerCapabilities {
   logging?: Record<string, unknown>;
   completions?: Record<string, unknown>;
   experimental?: {
-    progressNotifications?: boolean;
-    cancellationSupport?: boolean;
-    extendedMetadata?: boolean;
+    progressNotifications?: Record<string, unknown>;
+    cancellationSupport?: Record<string, unknown>;
+    extendedMetadata?: Record<string, unknown>;
   };
 }
 

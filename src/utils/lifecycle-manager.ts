@@ -59,9 +59,9 @@ export class FdaLifecycleManager implements LifecycleManager {
       logging: {},
       completions: {},
       experimental: {
-        progressNotifications: true,
-        cancellationSupport: true,
-        extendedMetadata: true
+        progressNotifications: {},
+        cancellationSupport: {},
+        extendedMetadata: {}
       }
     };
   }
