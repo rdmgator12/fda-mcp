@@ -55,6 +55,7 @@
     "body-parser": "^2.2.1",
     "flatted": "^3.4.2",
     "follow-redirects": "^1.16.0",
+    "hono": "4.12.21",
     "js-yaml": "^4.1.1",
     "picomatch": "^2.3.2",
     "uuid": "^11.1.1"
