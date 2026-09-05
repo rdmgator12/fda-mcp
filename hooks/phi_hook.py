@@ -1,4 +1,4 @@
-"""PHI pre-commit hook — v1.8 (2026-07-13, Python).
+"""PHI pre-commit hook — v1.9 (2026-09-05, Python).
 
 Importable module. Entry point is `main()`. `pre-commit` is a thin wrapper.
 
@@ -20,10 +20,17 @@ Path allowlist skips synthetic-fixture directories:
   test-fixtures/ | scripts/test-* | scripts/demo-*
 
 Install (per repo): ln -sf ../../hooks/pre-commit .git/hooks/pre-commit
-Override: git commit --no-verify (discouraged)
+There is no override flag: a false positive is fixed in the allowlists below.
 Full-history audit (existing repos): python hooks/scan-history.py
 
 Changelog:
+  v1.9 — Alethoskopia audit F27/F30/F31 (2026-09-05): secret-token scanning runs on EVERY
+         staged file (fixture/metadata path exemptions now apply to PHI-shape patterns
+         only — a real key in .github/workflows/*.yml or package.json blocked nothing);
+         the patient/plaintiff/defendant label is case-insensitive (`Patient Morgan …`
+         evaded it); diagnostics REDACT the matched value (the blocked token was being
+         copied into terminal history and logs); the bypass-flag advice is gone —
+         hooks are never bypassed, a false positive is fixed in the allowlist.
   v1.8 — SLUG_NAME_ALLOWLIST added: exact (token1, token2) pairs vetted as
          non-patient are exempted from Pattern 1 (slug). First entry
          ("palmer","martello") = Ralph's dog / canine-cAD teaching dashboard,
@@ -156,7 +163,7 @@ PHI_FIELD = r"\b(DOB|MRN|dob|mrn|date[_ ]of[_ ]birth|insurance[_ ]?id)\b"
 
 NAME_THEN_PHI = re.compile(NAME_SHAPE + r"[^A-Za-z\n]{0,60}" + PHI_FIELD)
 LABEL_THEN_NAME = re.compile(
-    r"\b(patient[\s_-]?name|plaintiff|defendant|patient)\b"
+    r"\b(?i:patient[\s_-]?name|plaintiff|defendant|patient)\b"
     r"[\s\'\"`:=]{1,10}"
     r"[\'\"`]?" + NAME_SHAPE
 )
@@ -450,7 +457,25 @@ def scan_data_files(files):
     return hits
 
 
-def run_scan(files, diff_lines, slug_paths=None):
+_TOKEN_RUN = r"[A-Za-z0-9_\-./+=:]{0,200}"
+
+
+def redact(line, needle):
+    """v1.9 (F31): the diagnostic names WHERE and WHAT KIND, never the value. `needle` is
+    the matched text (or `kind:prefix40` for secrets); the whole token run around it is
+    replaced, so a truncated prefix cannot leak the head of a key."""
+    if not needle:
+        return line
+    cands = [needle]
+    if ":" in needle and len(needle.split(":", 1)[0]) < 20:
+        cands.append(needle.split(":", 1)[1])
+    for cand in cands:
+        if cand and cand in line:
+            return re.sub(re.escape(cand) + _TOKEN_RUN, "[REDACTED]", line, count=1)
+    return "[REDACTED]"
+
+
+def run_scan(files, diff_lines, slug_paths=None, secret_lines=None):
     """Pure scan orchestrator. Returns list of (kind, detail, match) tuples.
 
     `diff_lines` should be the added-line set from non-fixture files only.
@@ -466,7 +491,9 @@ def run_scan(files, diff_lines, slug_paths=None):
         fails.append(("slug", line, m))
     for line, m in scan_name_phi(diff_lines):
         fails.append(("name_phi", line, m))
-    for line, kind, m in scan_secrets(diff_lines):
+    # v1.9 (F27): secrets are scanned in EVERY file — a fixture/metadata exemption is a
+    # statement about PHI-shaped test data, not about credentials.
+    for line, kind, m in scan_secrets(secret_lines if secret_lines is not None else diff_lines):
         fails.append(("secret", line, f"{kind}:{m[:40]}"))
     for f in scan_credentials(files):
         fails.append(("credential", f, f))
@@ -484,11 +511,13 @@ def main():
 
     non_fixture = [f for f in files if not FIXTURE_PATH.search(f)]
     diff_nf = staged_diff(non_fixture) if non_fixture else ""
+    diff_all = staged_diff(files)
 
     fails = run_scan(
         files=files,
         diff_lines=added_lines(diff_nf),
         slug_paths=non_fixture,
+        secret_lines=added_lines(diff_all),
     )
 
     if not fails:
@@ -505,8 +534,8 @@ def main():
         print(
             "❌ pre-commit: possible patient-name slug in Maieutic/Themis/Nostos path:"
         )
-        for _, line, _ in slug_hits[:5]:
-            print(f"    {line[:140]}")
+        for _, line, m in slug_hits[:5]:
+            print(f"    {redact(line, m)[:140]}")
         print()
         print("   Reference cases by number + clinical topic only.")
         print("   Example: 'Maieutic Case 36 — MRI + exam DDx pivot dashboard'")
@@ -516,15 +545,15 @@ def main():
         print(
             "⚠️  pre-commit: proper-noun name adjacent to PHI field (DOB/MRN/insurance/patient):"
         )
-        for _, line, _ in name_hits[:5]:
-            print(f"    {line[:140]}")
+        for _, line, m in name_hits[:5]:
+            print(f"    {redact(line, m)[:140]}")
         print()
         print("   If this is synthetic test data, move it under one of:")
         print("     TestCase_*/ | fixtures/ | test_data/ | tests/fixtures/")
         print("     scripts/test-* | scripts/demo-*")
         print("   Or rename identifiers to obvious placeholders (TEST_USER_001, etc.).")
-        print("   If this is Ralph's own name or a known public figure, override:")
-        print("     git commit --no-verify")
+        print("   Ralph's own name / a public figure: add the exact pair to SLUG_NAME_ALLOWLIST or")
+        print("   SELF_NAME_ALLOW in phi_hook.py. Hooks are never bypassed.")
         print()
 
     if cred_hits:
@@ -541,14 +570,14 @@ def main():
         print("   Move legitimate binaries under one of:")
         print("     assets/ | docs/ | images/ | references/ | screenshots/")
         print("   Or for test fixtures: tests/ | fixtures/ | TestCase_*/")
-        print("   Otherwise: confirm no patient info is in the file, then:")
-        print("     git commit --no-verify")
+        print("   Otherwise: confirm no patient info is in the file and add its path to")
+        print("   BINARY_ALLOW_PATH in phi_hook.py. Hooks are never bypassed.")
         print()
 
     if secret_hits:
         print("❌ pre-commit: secret / API-token shape in staged diff:")
         for _, line, m in secret_hits[:5]:
-            print(f"    [{m}]  in:  {line[:120]}")
+            print(f"    [{m.split(':', 1)[0]}]  in:  {redact(line, m)[:120]}")
         print()
         print("   If this is a REAL token: rotate it now, then redact + recommit.")
         print("   If this is a doc/test placeholder, use one of:")
@@ -564,7 +593,7 @@ def main():
         print()
         print("   CSV/TSV exports are a common patient-list leak. If this is synthetic")
         print("   or non-PHI reference data, move it under tests/ | fixtures/ | docs/,")
-        print("   otherwise confirm no patient info, then: git commit --no-verify")
+        print("   otherwise confirm no patient info and add the path to BINARY_ALLOW_PATH. Hooks are never bypassed.")
         print()
 
     print("Commit blocked. See feedback_no_phi_in_repos.md for policy.")
