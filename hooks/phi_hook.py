@@ -1,4 +1,4 @@
-"""PHI pre-commit hook — v1.9 (2026-09-05, Python).
+"""PHI pre-commit hook — v1.10 (2026-09-10, Python).
 
 Importable module. Entry point is `main()`. `pre-commit` is a thin wrapper.
 
@@ -24,6 +24,12 @@ There is no override flag: a false positive is fixed in the allowlists below.
 Full-history audit (existing repos): python hooks/scan-history.py
 
 Changelog:
+  v1.10 — Alethoskopia audit F26/F28/F29 (2026-09-10): the staged file list is
+         NUL-separated (a git-quoted name was re-read as a literal pathspec and went
+         unscanned); a bracket is a placeholder only when EVERY comma-separated item is
+         placeholder vocabulary (`[Patient Name, <real>, DOB <date>]` was stripped whole);
+         Pattern 1 fires on the repo-relative `reasoning/` and `cases/` layouts the
+         pre-commit hook actually sees, not only on a Maieutic/Themis/Nostos prefix.
   v1.9 — Alethoskopia audit F27/F30/F31 (2026-09-05): secret-token scanning runs on EVERY
          staged file (fixture/metadata path exemptions now apply to PHI-shape patterns
          only — a real key in .github/workflows/*.yml or package.json blocked nothing);
@@ -118,8 +124,13 @@ import sys
 
 # ----- Pattern 1: Maieutic/Themis/Nostos path slug with patient-name shape
 PATH_SLUG = re.compile(
-    r"(?:[Mm]aieutic|[Tt]hemis|[Nn]ostos)"
-    r"/[A-Za-z0-9_/-]+/\d{4}-\d{2}-\d{2}-([a-z]+)-([a-z]+)-[a-z]"
+    r"(?:(?:[Mm]aieutic|[Tt]hemis|[Nn]ostos)/[A-Za-z0-9_/-]+"
+    # v1.10 (F29): `git diff --name-only` hands the pre-commit hook REPO-RELATIVE paths, so
+    # inside the Maieutic repo a case file is `reasoning/<date>-<first>-<last>-…` with no
+    # project prefix — the rule never fired where it was installed. The case dirs by name;
+    # a dated file anywhere else (docs/<date>-fix-list.md) is still not a slug.
+    r"|(?<![A-Za-z0-9_-])(?:reasoning|[Cc]ases))"
+    r"/\d{4}-\d{2}-\d{2}-([a-z]+)-([a-z]+)-[a-z]"
 )
 
 DISEASE_ALLOWLIST = re.compile(
@@ -175,12 +186,16 @@ SELF_NAME_ALLOW = re.compile(r"\bRalph Martello\b")
 # Strip ONLY literal placeholder vocabulary, never an arbitrary [Cap Cap] pair — the old
 # `[A-Z][a-z]+ [A-Z][a-z]+` form stripped a real bracketed `[<First> <Last>, DOB ...]` and
 # immunized it.
-BRACKET_PLACEHOLDER_ALLOW = re.compile(
-    r"\[(?:"
-    r"patient[\s_-]?name|full[\s_-]?name|first[\s_-]?(?:and[\s_-]?)?last|"
+_PLACEHOLDER_VOCAB = (
+    r"(?:patient[\s_-]?name|full[\s_-]?name|first[\s_-]?(?:and[\s_-]?)?last|"
     r"first[\s_-]?name|last[\s_-]?name|name|patient|first|last|"
-    r"dob|mrn|date[\s_-]?of[\s_-]?birth|insurance[\s_-]?id|insert[\s\w]*|your[\s\w]*"
-    r")(?:,[^\]]*)?\]",
+    r"dob|mrn|date[\s_-]?of[\s_-]?birth|insurance[\s_-]?id|insert[\s\w]*|your[\s\w]*)"
+)
+# v1.10 (F28): a bracket is a placeholder only when EVERY comma-separated item is placeholder
+# vocabulary. The v1.5b tail `(?:,[^\]]*)?` let `[Patient Name, <real name>, DOB <date>]` be
+# stripped whole — one placeholder word immunised the real values beside it.
+BRACKET_PLACEHOLDER_ALLOW = re.compile(
+    r"\[" + _PLACEHOLDER_VOCAB + r"(?:\s*,\s*" + _PLACEHOLDER_VOCAB + r")*\s*\]",
     re.IGNORECASE,
 )
 
@@ -313,13 +328,15 @@ FIXTURE_PATH = re.compile(
 
 
 def staged_files():
+    # v1.10 (F26): -z — git quotes unusual names ("note\\tsecret.txt") in the newline format,
+    # and the quoted string fed back as a pathspec matched nothing, so the file went unscanned.
     r = subprocess.run(
-        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMRT"],
+        ["git", "diff", "--cached", "--name-only", "-z", "--diff-filter=ACMRT"],
         capture_output=True,
         text=True,
         check=True,
     )
-    return [f for f in r.stdout.splitlines() if f]
+    return [f for f in r.stdout.split("\0") if f]
 
 
 def staged_diff(files):
