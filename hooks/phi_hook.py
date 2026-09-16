@@ -1,19 +1,21 @@
-"""PHI pre-commit hook — v1.10 (2026-09-10, Python).
+"""PHI pre-commit hook — v1.12 (2026-09-16, Python).
 
 Importable module. Entry point is `main()`. `pre-commit` is a thin wrapper.
 
 Six-pattern gate:
 1. Patient-name slugs in Maieutic/Themis/Nostos reasoning paths (scans staged
    content AND the staged file paths themselves)
-2. Proper-noun name adjacent to PHI field (DOB/MRN/insurance/patient/plaintiff),
-   incl. value-shaped record rows (name + DOB-value + id) like a CSV line
+2. Proper-noun name adjacent to PHI field (DOB/MRN/SSN/insurance/patient/plaintiff) in
+   either order, ALL-CAPS names beside a field, a phone number beside a name, a standalone
+   SSN value, and value-shaped record rows (name/DOB/id; `Last, First` too) like a CSV line
 3. Credential files (.env, credentials.json, *secrets.{yml,json}, *private_key*)
 4. PHI-risk binary files (pdf/docx/xlsx/png/jpg/tif/dcm) outside allowlisted
    paths; PHI-suggestive basenames block even under allowlisted paths
 5. API-token / secret shapes (Anthropic, OpenAI, AWS, GitHub, Google, Slack,
    Stripe live, private-key PEM blocks). Tight regex + length anchors;
    truncated doc placeholders (sk-..., AKIAIOSFODNN7EXAMPLE) pass.
-6. Structured-data files (.csv/.tsv/.psv) outside allowlisted paths
+6. Structured-data files (.csv/.tsv/.psv) outside fixture paths (v1.12: docs/ etc. no
+   longer exempt them)
 
 Path allowlist skips synthetic-fixture directories:
   TestCase_*/ | fixtures/ | test_data/ | tests/fixtures/ |
@@ -24,6 +26,37 @@ There is no override flag: a false positive is fixed in the allowlists below.
 Full-history audit (existing repos): python hooks/scan-history.py
 
 Changelog:
+  v1.12 — /poll review, 9 seats, every claim executed against this module before any edit
+         (record: ~/.claude/bench/phi_review_20260916/). Pattern 6: docs/*.csv no longer exempt
+         (6 seats). Pattern 1: tokens any case, third token optional, undated variant, notes/
+         encounters/patients dirs; the panel's every-token vocabulary check was REJECTED by a
+         census of 104 real slug tokens (78 legitimate clinical words). Pattern 2: field→name,
+         ALL-CAPS beside a field, SSN label + standalone SSN value (kind "ssn"), phone beside a
+         name-shaped pair, Last-First rows and labels, ID-first rows, Latin-script Unicode
+         tokens, insert/your placeholders bounded. Priced against v1.11 on 272,209 tracked
+         lines in 17 repos: +13 lines newly flagged (8 phone; 3 were this file's own comment
+         examples, now <First> <Last> placeholders — a hook source must not trip itself, and a
+         test enforces it). REJECTED by the same pricing: a word-tolerant name↔field gap (+45,
+         citations) and an any-order field-set row (+19, bibliographies). redact() shows a
+         20-char window. Key-material files, mail/archive/audio containers, encounter-document
+         basenames gated; .github/ leaves the PHI-content exemption. pre-push v1.5: a first push
+         with no remote-tracking ref scans from the empty tree (was: the tip commit only —
+         reproduced 1 of 3). scan-history v2.3: secrets in every blob; undecodable text counted.
+         TEST RUNNER: unittest.main() sat mid-file since v1.9, so the direct command ran 128 of
+         163 defined tests; the earlier "+N → M" counts were that undercount. Now 191, and the
+         suite gate asserts the count. Residuals, documented: words between a name and its
+         field; a surname at slug token 3+; prose with no field at all (v1.13 density gate).
+  v1.11 — <clinical>-<ordinary-word> false-positive class (2026-09-15/16): PATH_SLUG takes
+         the two tokens after the date, and Pattern 1 exempts only when BOTH are vocabulary,
+         so 2026-04-12-hfnc-journal-club tripped on ('hfnc','journal') — likewise
+         sepsis-bundle, asthma-pathway. Reproducing it showed the diagnosis was half right:
+         'hfnc' was missing from the vocabulary too, so BOTH tokens needed adding. Fix is
+         purely additive: hfnc plus 18 clinical-education / QI descriptors join
+         DISEASE_ALLOWLIST. The both-tokens rule is untouched, so a surname
+         beside any new word still blocks (smith-journal, martello-bundle — tested). The
+         alternative, "either token clinical unless a surname", was rejected: no surname
+         list exists and one can never be complete, so it would turn a fail-closed gate
+         fail-open. +2 tests → 128.
   v1.10 — Alethoskopia audit F26/F28/F29 (2026-09-10): the staged file list is
          NUL-separated (a git-quoted name was re-read as a literal pathspec and went
          unscanned); a bracket is a placeholder only when EVERY comma-separated item is
@@ -129,8 +162,18 @@ PATH_SLUG = re.compile(
     # inside the Maieutic repo a case file is `reasoning/<date>-<first>-<last>-…` with no
     # project prefix — the rule never fired where it was installed. The case dirs by name;
     # a dated file anywhere else (docs/<date>-fix-list.md) is still not a slug.
-    r"|(?<![A-Za-z0-9_-])(?:reasoning|[Cc]ases))"
-    r"/\d{4}-\d{2}-\d{2}-([a-z]+)-([a-z]+)-[a-z]"
+    r"|(?<![A-Za-z0-9_-])(?:[Rr]easoning|[Cc]ases|[Nn]otes|[Ee]ncounters|[Pp]atients))"
+    # v1.12: tokens are ANY case and the third token is OPTIONAL. Through v1.11 the regex demanded
+    # `-[a-z]` after token 2 and lowercase tokens, so `reasoning/2026-05-12-<first>-<last>.md` and
+    # `…-<First>-<Last>-r.md` never matched at all (2026-09-16 /poll review, 6 of 9 seats; both
+    # reproduced). The slug ends at `-`, `.`, `/` or end-of-string.
+    r"/\d{4}-\d{2}-\d{2}-([A-Za-z]+)-([A-Za-z]+)(?=[-./]|$)"
+)
+# v1.12: an UNDATED name-shaped file directly under a case dir — reasoning/<first>-<last>-followup.md.
+# Same two-token rule; the date prefix was never the signal, the dir + first-last shape is.
+UNDATED_CASE_SLUG = re.compile(
+    r"(?<![A-Za-z0-9_-])(?:[Rr]easoning|[Cc]ases|[Nn]otes|[Ee]ncounters|[Pp]atients)"
+    r"/([A-Za-z]+)-([A-Za-z]+)(?=[-./]|$)"
 )
 
 DISEASE_ALLOWLIST = re.compile(
@@ -138,13 +181,18 @@ DISEASE_ALLOWLIST = re.compile(
     r"respiratory|failure|syndrome|disease|treatment|resident|guide|"
     r"update|workup|optimization|pediatric|ddx|myositis|discharge|"
     r"hospital|emergency|dka|sepsis|bronchiolitis|asthma|pneumonia|"
-    r"influenza|covid|case-update|pivot-protocol|mri|exam|"
+    r"influenza|covid|case|pivot|mri|exam|"
     # anatomical/clinical descriptors for MSK/neuro case slugs. Used with
     # fullmatch on EACH captured token (v1.5b semantics): a slug passes only
     # when BOTH tokens are clinical vocabulary — hence the standalone ue/le
     # abbreviations, so 2026-..-bilateral-ue-entrapment-neuropathy stays green.
     r"bilateral|unilateral|entrapment|neuropathy|neuropathic|radiculopathy|"
     r"tunnel|plexus|epicondylitis|tendinopathy|tendinitis|carpal|cubital|"
+    # v1.11: clinical-education / QI descriptors. Closes the <clinical>-<ordinary-word>
+    # false-positive class WITHOUT touching the both-tokens rule — a surname paired with
+    # any of these still blocks (smith-journal, martello-bundle: tested).
+    r"hfnc|journal|club|bundle|pathway|protocol|guidelines?|handout|checklist|curriculum|"
+    r"algorithm|teaching|lecture|conference|audit|qi|refresher|orderset|"
     r"ue|le)\b",
     re.IGNORECASE,
 )
@@ -165,14 +213,39 @@ SLUG_NAME_ALLOWLIST = {
 # A name token: capitalized first/last, allowing an internal apostrophe/hyphen compound
 # (Mary-Jane, D'Angelo) or a cap-apostrophe-cap head (O'Brien). All-caps tokens (MRI, CT)
 # are deliberately excluded — the first segment requires a lowercase tail.
+# v1.12: Latin-script letters beyond ASCII (José, María, Müller, Nguyễn) — Florida is not ASCII.
+# Loose classes on purpose: Latin-1 Supplement + Extended-A/B + Extended Additional; the SHAPE
+# (capital head, lowercase tail, two tokens) still does the work.
+_UP = r"[A-Z\u00C0-\u024F\u1E00-\u1EFF]"
+_LO = r"[a-z\u00DF-\u024F\u1E00-\u1EFF]"
 _NAME_TOKEN = (
-    r"(?:[A-Z][a-z]{1,20}|[A-Z]['’][A-Z][a-z]{1,20})" r"(?:[-'’][A-Z]?[a-z]{1,20})?"
+    r"(?:" + _UP + _LO + r"{1,20}|" + _UP + r"['’]" + _UP + _LO + r"{1,20})"
+    r"(?:[-'’]" + _UP + r"?" + _LO + r"{1,20})?"
 )
 # First [optional middle initial] Last — the middle initial closes the "John A. Smith" gap.
 NAME_SHAPE = r"\b" + _NAME_TOKEN + r"(?:[ ][A-Z]\.?)?[ \-]" + _NAME_TOKEN + r"\b"
-PHI_FIELD = r"\b(DOB|MRN|dob|mrn|date[_ ]of[_ ]birth|insurance[_ ]?id)\b"
+# v1.12: ALL-CAPS name shape — EHR exports and radiology headers print SMITH JOHN. Used ONLY beside a
+# PHI-field co-signal, never alone (MRI CT would flood). 0 hits on 271,221 real lines with the co-signal.
+CAPS_NAME_SHAPE = r"\b[A-Z]{2,20}(?:[ ][A-Z]\.)?[ ,][ ]?[A-Z]{2,20}\b"
+# v1.12: SSN label joins the PHI fields (the human phi-sweep battery had it; the hook did not).
+PHI_FIELD = (
+    r"\b(DOB|MRN|dob|mrn|date[_ ]of[_ ]birth|insurance[_ ]?id|"
+    r"SSN|ssn|Ssn|social[_ ]security|Social[_ ]Security|SOCIAL[_ ]SECURITY)\b"
+)
+_GAP = r"[^A-Za-z\n]{0,60}"  # v1.12 note: a word-tolerant gap was priced on real lines and REJECTED for FPs — words between a name and its field remain a documented residual.
+# v1.12 value shapes. A 3-2-4 hyphenated number is an SSN often enough, and rare enough otherwise
+# (0 hits on 271,221 tracked lines), to be a STANDALONE finding. A phone number is not PHI by itself —
+# every README carries one — so it counts only within 60 chars of a name-shaped pair. Priced against
+# v1.11 on 272,209 tracked lines: +8 lines newly flagged by this rule (business-name + phone lines
+# included — "Golf Shop: 727-…" is a proper-noun pair and blocks; that is the accepted cost).
+SSN_VALUE = re.compile(r"(?<![\d-])\d{3}-\d{2}-\d{4}(?![\d-])")
+_PHONE_VALUE = r"(?:\(\d{3}\)|\d{3})[-. ]\d{3}[-. ]\d{4}(?!\d)"
 
-NAME_THEN_PHI = re.compile(NAME_SHAPE + r"[^A-Za-z\n]{0,60}" + PHI_FIELD)
+NAME_THEN_PHI = re.compile(NAME_SHAPE + _GAP + PHI_FIELD)
+PHI_THEN_NAME = re.compile(PHI_FIELD + _GAP + NAME_SHAPE)              # v1.12: `MRN 1234567 <First> <Last>`
+CAPS_NAME_THEN_PHI = re.compile(CAPS_NAME_SHAPE + _GAP + PHI_FIELD)    # v1.12: `<LAST> <FIRST> DOB …`
+PHI_THEN_CAPS_NAME = re.compile(PHI_FIELD + _GAP + CAPS_NAME_SHAPE)
+NAME_NEAR_PHONE = re.compile(NAME_SHAPE + _GAP + _PHONE_VALUE + r"|" + _PHONE_VALUE + _GAP + NAME_SHAPE)
 LABEL_THEN_NAME = re.compile(
     r"\b(?i:patient[\s_-]?name|plaintiff|defendant|patient)\b"
     r"[\s\'\"`:=]{1,10}"
@@ -189,7 +262,11 @@ SELF_NAME_ALLOW = re.compile(r"\bRalph Martello\b")
 _PLACEHOLDER_VOCAB = (
     r"(?:patient[\s_-]?name|full[\s_-]?name|first[\s_-]?(?:and[\s_-]?)?last|"
     r"first[\s_-]?name|last[\s_-]?name|name|patient|first|last|"
-    r"dob|mrn|date[\s_-]?of[\s_-]?birth|insurance[\s_-]?id|insert[\s\w]*|your[\s\w]*)"
+    r"dob|mrn|date[\s_-]?of[\s_-]?birth|insurance[\s_-]?id|"
+    # v1.12: `insert[\s\w]*` / `your[\s\w]*` swallowed a real name — `[Insert <First> <Last> here]` was
+    # stripped whole and immunised the name beside it (reproduced 2026-09-16). Bounded to placeholder words.
+    r"insert(?:[\s_-]+(?:name|here|value|text|info|details|your|the|a|an|patient|date|id))*|"
+    r"your(?:[\s_-]+(?:name|patient|info|details|value|text|here|date|id))*)"
 )
 # v1.10 (F28): a bracket is a placeholder only when EVERY comma-separated item is placeholder
 # vocabulary. The v1.5b tail `(?:,[^\]]*)?` let `[Patient Name, <real name>, DOB <date>]` be
@@ -209,14 +286,22 @@ CRED_FILE = re.compile(
     r"\.env(\.(?!(?:example|sample|template)\b)[^/]*)?|"
     r"credentials\.json|"
     r"[^/]*secrets?\.(?:ya?ml|json)|"  # secrets.yaml, config-secrets.yaml, app-secrets.json
-    r"[^/]*private_key[^/]*"
+    r"[^/]*private_key[^/]*|"
+    # v1.12: key-material file shapes (2026-09-16 /poll review, muse-spark). Bare .pem is NOT
+    # blocked — cert bundles (fullchain.pem) are public; a .pem whose name says key/private/secret is.
+    r"[^/]*\.(?:key|p12|pfx)|"
+    r"[^/]*(?:key|private|secret)[^/]*\.pem|"
+    r"id_(?:rsa|ed25519|ecdsa|dsa)(?!\.pub)"
     r")$"
 )
 
 # ----- Pattern 4: PHI-risk binary extensions
 # Any file of these types anywhere NOT under a binary allowlist path is blocked.
 BINARY_RISK = re.compile(
-    r"\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|tiff?|dcm|dicom|heic|webp)$",
+    # v1.12 adds mail containers, archives and audio/video (dictation, screen recordings) — none is
+    # content-scannable, so all are gated like PDFs (2026-09-16 /poll review, qwen + muse).
+    r"\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|tiff?|dcm|dicom|heic|webp|gif|bmp|"
+    r"msg|eml|zip|7z|gz|tgz|tar|rar|mp3|wav|m4a|mp4|mov)$",
     re.IGNORECASE,
 )
 # Allowlisted locations for legitimate binaries (docs, research papers, architecture
@@ -236,8 +321,12 @@ BINARY_ALLOW_PATH = re.compile(
 # file under docs/ or assets/ used to pass. Tight list to limit false
 # positives; extend deliberately, not reflexively.
 BINARY_PHI_BASENAME = re.compile(
-    r"(^|/)[^/]*(patient|mrn|dob|chart|x[-_]?ray|imaging)[^/]*"
-    r"\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|tiff?|dcm|dicom|heic|webp)$",
+    # v1.12 adds encounter-document vocabulary (2026-09-16 /poll review, 5 seats). Deliberately NOT
+    # bare `note` / `summary` — release-notes.pdf is a real file; discharge_summary.pdf is the leak.
+    r"(^|/)[^/]*(patient|mrn|dob|chart|x[-_]?ray|imaging|"
+    r"discharge|admission|consult|referral|encounter|ehr|emr|hpi|h[-_]?and[-_]?p|"
+    r"progress[-_]?note|clinic[-_]?note|visit)[^/]*"
+    r"\.(pdf|docx?|xlsx?|pptx?|png|jpe?g|tiff?|dcm|dicom|heic|webp|gif|bmp|msg|eml|zip|7z|gz|tgz|tar|rar|mp3|wav|m4a|mp4|mov)$",
     re.IGNORECASE,
 )
 
@@ -312,6 +401,17 @@ _DOB_VALUE = (
 RECORD_ROW = re.compile(
     NAME_SHAPE + r"\s*[,\t|]\s*(?:" + _DOB_VALUE + r")\s*[,\t|]\s*\d{3,}"
 )
+# v1.12: the `Last, First` export layout (0 FP on 271,221 real lines).
+LAST_FIRST = r"\b" + _NAME_TOKEN + r",\s*" + _NAME_TOKEN + r"\b"
+RECORD_ROW_LAST_FIRST = re.compile(
+    LAST_FIRST + r"\s*[,\t|]\s*(?:" + _DOB_VALUE + r")\s*[,\t|]\s*\d{3,}"
+)
+# v1.12: `<Last>, <First> DOB 01/01/1990` — the Last, First label form (priced: see changelog).
+LAST_FIRST_THEN_PHI = re.compile(LAST_FIRST + _GAP + PHI_FIELD)
+# v1.12: ID-first layout `4432101,<First> <Last>,1990-01-01`; the id must be MRN-length (7+ digits).
+RECORD_ROW_ID_FIRST = re.compile(
+    r"(?:^|[,\t|])\s*\d{7,}\s*[,\t|]\s*" + NAME_SHAPE + r"\s*[,\t|]\s*(?:" + _DOB_VALUE + r")"
+)
 
 # ----- Path allowlist for synthetic-fixture directories AND metadata files
 FIXTURE_PATH = re.compile(
@@ -319,7 +419,9 @@ FIXTURE_PATH = re.compile(
     r"TestCase_|tests?/|test_data/|test-fixtures/|"
     r"fixtures/|scripts/test[-_]|scripts/demo[-_]|scripts/smoke[-_]|"
     r"demo_cases\.ts|test-complex-case\.ts|"
-    r"\.github/|"
+    # v1.12: `.github/` is no longer a PHI-content exemption — an ISSUE_TEMPLATE or workflow note
+    # carrying a name+DOB was never fed to Pattern 2. It stays in BINARY_ALLOW_PATH (binaries
+    # under .github/ are unaffected) and secrets were already scanned there since v1.9.
     r"CaseTemplate/|"
     r"plugin\.json|marketplace\.json|package\.json|package-lock\.json|"
     r"LICENSE"
@@ -383,15 +485,26 @@ def scan_slug(diff_lines):
     """
     hits = []
     for line in diff_lines:
-        for m in PATH_SLUG.finditer(line):
-            t1, t2 = m.group(1), m.group(2)
-            if (t1.lower(), t2.lower()) in SLUG_NAME_ALLOWLIST:
-                continue  # vetted non-patient name (e.g. Ralph's dog)
-            if DISEASE_ALLOWLIST.fullmatch(t1) and DISEASE_ALLOWLIST.fullmatch(t2):
-                continue  # clinical-topic slug, not a patient name
-            hits.append((line.rstrip(), m.group(0)))
-            break
+        for rx in (PATH_SLUG, UNDATED_CASE_SLUG):
+            found = False
+            for m in rx.finditer(line):
+                t1, t2 = m.group(1).lower(), m.group(2).lower()
+                if (t1, t2) in SLUG_NAME_ALLOWLIST:
+                    continue  # vetted non-patient name (e.g. Ralph's dog)
+                if _slug_token_ok(t1) and _slug_token_ok(t2):
+                    continue  # clinical-topic slug, not a patient name
+                hits.append((line.rstrip(), m.group(0)))
+                found = True
+                break
+            if found:
+                break
     return hits
+
+
+def _slug_token_ok(token):
+    """A slug token is not name-shaped when it is clinical vocabulary or a single case letter
+    (the `2026-04-18-case-A` convention — v1.12 census: 29 real case dirs, none name-shaped)."""
+    return len(token) == 1 or bool(DISEASE_ALLOWLIST.fullmatch(token))
 
 
 def scan_name_phi(diff_lines):
@@ -406,11 +519,28 @@ def scan_name_phi(diff_lines):
         stripped = strip_allowlisted(line)
         hit = (
             NAME_THEN_PHI.search(stripped)
+            or PHI_THEN_NAME.search(stripped)
             or LABEL_THEN_NAME.search(stripped)
+            or CAPS_NAME_THEN_PHI.search(stripped)
+            or PHI_THEN_CAPS_NAME.search(stripped)
+            or NAME_NEAR_PHONE.search(stripped)
             or RECORD_ROW.search(stripped)
+            or RECORD_ROW_LAST_FIRST.search(stripped)
+            or LAST_FIRST_THEN_PHI.search(stripped)
+            or RECORD_ROW_ID_FIRST.search(stripped)
         )
         if hit:
             hits.append((line.rstrip(), hit.group(0)))
+    return hits
+
+
+def scan_ssn(diff_lines):
+    """v1.12 — a standalone SSN-shaped value (3-2-4). Returns [(line, match), ...]."""
+    hits = []
+    for line in diff_lines:
+        m = SSN_VALUE.search(strip_allowlisted(line))
+        if m:
+            hits.append((line.rstrip(), m.group(0)))
     return hits
 
 
@@ -466,8 +596,10 @@ def scan_data_files(files):
     for f in files:
         if not DATA_FILE_RISK.search(f):
             continue
-        if BINARY_ALLOW_PATH.search(f):
-            continue
+        # v1.12: BINARY_ALLOW_PATH no longer exempts data files. `docs/census.csv` passed here
+        # through v1.11 — the 2026-09-16 /poll review's most-converged finding (6 of 9 seats) —
+        # while the docstring called a patient line-list the likeliest clinician leak. Only a
+        # fixture path (synthetic data by declaration) exempts a CSV/TSV/PSV.
         if FIXTURE_PATH.search(f):
             continue
         hits.append(f)
@@ -488,7 +620,14 @@ def redact(line, needle):
         cands.append(needle.split(":", 1)[1])
     for cand in cands:
         if cand and cand in line:
-            return re.sub(re.escape(cand) + _TOKEN_RUN, "[REDACTED]", line, count=1)
+            m = re.search(re.escape(cand) + _TOKEN_RUN, line)
+            s, e = m.span()
+            # v1.12: only a bounded window around the match is shown. The whole-line form printed
+            # everything BEFORE the needle verbatim — a second name 35 chars earlier on the line
+            # reached the terminal and shell history (2026-09-16 /poll review, minimax-m3;
+            # reproduced). 20 chars each side keeps the finding locatable.
+            pre, post = line[max(0, s - 20):s], line[e:e + 20]
+            return ("…" if s > 20 else "") + pre + "[REDACTED]" + post + ("…" if e + 20 < len(line) else "")
     return "[REDACTED]"
 
 
@@ -508,6 +647,8 @@ def run_scan(files, diff_lines, slug_paths=None, secret_lines=None):
         fails.append(("slug", line, m))
     for line, m in scan_name_phi(diff_lines):
         fails.append(("name_phi", line, m))
+    for line, m in scan_ssn(diff_lines):
+        fails.append(("ssn", line, m))
     # v1.9 (F27): secrets are scanned in EVERY file — a fixture/metadata exemption is a
     # statement about PHI-shaped test data, not about credentials.
     for line, kind, m in scan_secrets(secret_lines if secret_lines is not None else diff_lines):
@@ -541,7 +682,7 @@ def main():
         return 0
 
     slug_hits = [f for f in fails if f[0] == "slug"]
-    name_hits = [f for f in fails if f[0] == "name_phi"]
+    name_hits = [f for f in fails if f[0] in ("name_phi", "ssn")]
     cred_hits = [f for f in fails if f[0] == "credential"]
     bin_hits = [f for f in fails if f[0] == "binary"]
     secret_hits = [f for f in fails if f[0] == "secret"]
@@ -560,7 +701,7 @@ def main():
 
     if name_hits:
         print(
-            "⚠️  pre-commit: proper-noun name adjacent to PHI field (DOB/MRN/insurance/patient):"
+            "⚠️  pre-commit: proper-noun name adjacent to PHI field (DOB/MRN/SSN/insurance/phone/patient), or an SSN:"
         )
         for _, line, m in name_hits[:5]:
             print(f"    {redact(line, m)[:140]}")
@@ -609,8 +750,8 @@ def main():
             print(f"    {f}")
         print()
         print("   CSV/TSV exports are a common patient-list leak. If this is synthetic")
-        print("   or non-PHI reference data, move it under tests/ | fixtures/ | docs/,")
-        print("   otherwise confirm no patient info and add the path to BINARY_ALLOW_PATH. Hooks are never bypassed.")
+        print("   or non-PHI reference data, move it under tests/ | fixtures/ | test_data/.")
+        print("   No other location exempts a data file (v1.12). Hooks are never bypassed.")
         print()
 
     print("Commit blocked. See feedback_no_phi_in_repos.md for policy.")
