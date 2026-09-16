@@ -1,4 +1,4 @@
-"""PHI pre-commit hook — v1.12 (2026-09-16, Python).
+"""PHI pre-commit hook — v1.13 (2026-09-16, Python).
 
 Importable module. Entry point is `main()`. `pre-commit` is a thin wrapper.
 
@@ -26,6 +26,36 @@ There is no override flag: a false positive is fixed in the allowlists below.
 Full-history audit (existing repos): python hooks/scan-history.py
 
 Changelog:
+  v1.13 — Pattern 7, `prose`: a proper-noun name in clinical prose with NO field label — the only class
+         that has actually leaked from these repos (Themis 2026-07-02: a credential beside a surname,
+         staff names, a case caption; caught by hand, twice). Four shapes, each priced on the 16-repo
+         tracked corpus (tools/price-pattern.py, 238,362 lines after FIXTURE_PATH + allowlist) BEFORE
+         adoption: name pair within 30 chars of an N-year-old/Nyo form or directly followed by `aged N`;
+         Dr./Nurse + surname; surname + strong credential (RN LPN CRNA RPh PharmD APRN MSN BSN) unless an
+         author list; space-separated name pair + comma + ambiguous credential (MD DO NP PA RT — states,
+         prior-auth, author initials and `Standardized MD` priced those at 8 lines bare); credential +
+         `, Surname`. Raw pricing: name+age 11, title+name 25, name+credential 27, credential+name 0.
+         Residual after the widened self-name strip (middle initial, `Dr.` — bounded to Ralph's own name)
+         and a demonym strip: 8 corpus lines, all synthetic vignettes or bylines — MedLegal_System
+         README:145, Maieutic examples/jdm-12yo-treatment.md:3, EHI-Request README:220 (a public-figure
+         credit), MedicalLegal MCP tools/expert_conflict.py:107, BlackBerryAI BLUEPRINT.md:4, Stele
+         CHANGELOG.md:34 / docs/REVIEW-STATUS.md:88 / quote_fidelity.py:103 (`Dr. <placeholder>` examples).
+         They block only when those lines are next edited; the fix is a `<Surname>` placeholder.
+         REJECTED on the same corpus: name+date (285 — changelogs), a case caption `X v. Y` (135 / 80
+         without a reporter cite — Themis IS case law; the active case's caption is the opt-in blocklist
+         layer's job, ~/.git-hooks/blocklist_scan.py), name+clinical verb (1,363), name+facility (56),
+         name + any two signals (34); bare 6–10-digit numbers were never a candidate (PMIDs). Residual
+         MISSES, by shape: `<First> <Last> was admitted on <date>`; `patient <First> <Last> was seen`;
+         a bare `<Surname> MD`; a caption; a verbatim chart quote with no identifier (unreachable by
+         regex). demo_case/ joins FIXTURE_PATH (SourceMind's synthetic record set, 13 of the raw hits).
+         Companion changes the same day: pre-push v1.6 — every finding carries its commit and the footer
+         names the commits at fault (the first live block of an Alethoskopia push named only the ref);
+         deploy-hook v1.3 — a repo's own differing pre-commit wrapper is KEPT (Stele's fail-closed one
+         was silently replaced), and a repo carrying hooks/pre-push receives the whole family. Suite 207.
+  v1.12.1 — Pattern 1 undated variant no longer fires on a date template: `reasoning/YYYY-MM-DD-
+         [topic]-bias-audit.md` (four lines in Maieutic's SKILL/INSTALL/CHANGELOG/references,
+         caught by the deployed v1.12 on Maieutic's reinit root commit). yyyy/yy/mm/dd are
+         accepted slug tokens; a name beside one still blocks (test + control).
   v1.12 — /poll review, 9 seats, every claim executed against this module before any edit
          (record: ~/.claude/bench/phi_review_20260916/). Pattern 6: docs/*.csv no longer exempt
          (6 seats). Pattern 1: tokens any case, third token optional, undated variant, notes/
@@ -252,10 +282,61 @@ LABEL_THEN_NAME = re.compile(
     r"[\'\"`]?" + NAME_SHAPE
 )
 
+# ----- Pattern 7 (v1.13): proper-noun name in clinical PROSE — no field label at all.
+# The only class that has actually leaked from these repos (Themis 2026-07-02: `Source 1 RN, <Surname>`,
+# staff names with credentials, a case caption). Every rule below was priced on 238,362 tracked lines
+# (tools/price-pattern.py) BEFORE adoption: name+age 11, title+name 25, name+credential 27, credential+name 0
+# raw; the survivors after the self-name and demonym strips are listed in the changelog. REJECTED on the
+# same corpus: name+date (285 — changelogs), a case caption `X v. Y` (135 — Themis IS case law; the active
+# case's caption is the opt-in blocklist layer's job), name+clinical verb (1,363), name+facility (56),
+# name + any two signals (34). Bare 6–10-digit numbers were never a candidate (PMIDs are 8 digits).
+# Age: an `N-year-old` / `Nyo` form within 30 chars of a name pair (an 80-char gap let a Title Case tool
+# name 50 chars before an age through, twice); an age token glued to a slug or link character (`12yo](`,
+# `12yo-treatment`) is filename text, not prose; the `aged N` form only when it directly follows the
+# pair (`<First> <Last>, aged 45`, `<First> <Last> (aged 45)`) — `children aged 2-6` beside any Title
+# Case phrase was the corpus's whole false-positive class for that form.
+_GAP30 = r"[^\n]{0,30}?"
+AGE_OLD = r"\b(?:\d{1,3}[- ](?:year|yr|month|mo|week|wk|day)s?[- ]old|\d{1,2}\s?(?:yo|y/o|m/o))\b(?![-_/\]])"
+AGE_AGED = r"\b(?:age|aged)\s+\d{1,3}\b"
+NAME_NEAR_AGE = re.compile(
+    NAME_SHAPE + _GAP30 + AGE_OLD + r"|" + AGE_OLD + _GAP30 + NAME_SHAPE
+    + r"|" + NAME_SHAPE + r"[ ,(]{1,3}" + AGE_AGED
+)
+# Credentials: clinical only — PhD / Esq / JD are deliberately absent (an engineer or a lawyer is not PHI).
+# Two tiers, priced: a STRONG credential is unambiguous after a single surname (`<Surname> RN`), unless the
+# line is an author list (`<Surname> RN et al`, `<Surname> RN, <Surname> J`). The AMBIGUOUS two-letter ones
+# collide with states, prior-auth, author initials and "Standardized MD" (8 corpus lines: `Pittsburgh, PA`,
+# `Build PA`, `Tatonetti NP et al`, `Breton MD et al`), so they count only after a two-token name pair with
+# the comma (`<First> <Last>, MD`; `<First> <Last>, PA-C`). A bare `<Surname> MD` is a documented residual.
+_CRED_STRONG = r"(?:RN|LPN|CRNA|RPh|PharmD|APRN|MSN|BSN)"
+_CRED_AMBIG = r"(?:MD|DO|NP|PA|RT)"
+_CRED = r"(?:" + _CRED_STRONG + r"|" + _CRED_AMBIG + r")"
+_NOT_AUTHOR_LIST = r"(?!\s*(?:et al|,\s*" + _UP + _LO + r"+\s+[A-Z]{1,3}\b))"
+# Space-separated pair only: NAME_SHAPE also joins tokens with a hyphen, which made a hyphenated
+# locality triplet (`<City>-<City>-<City>, MD`) read as a name pair beside a state.
+_SPACED_PAIR = r"\b" + _NAME_TOKEN + r"(?:[ ][A-Z]\.?)?[ ]" + _NAME_TOKEN + r"\b"
+TITLE_THEN_NAME = re.compile(r"\b(?:Dr|Doctor|Nurse)\.?\s+" + _NAME_TOKEN + r"\b")   # `Dr. <Surname> ordered`
+NAME_THEN_CRED = re.compile(
+    r"\b" + _NAME_TOKEN + r",?\s+" + _CRED_STRONG + r"\b" + _NOT_AUTHOR_LIST            # `<Surname> RN`
+    + r"|" + _SPACED_PAIR + r",\s+" + _CRED_AMBIG + r"\b" + _NOT_AUTHOR_LIST            # `<First> <Last>, MD`
+)
+CRED_THEN_NAME = re.compile(                                                             # `Source 1 RN, <Surname>`
+    r"\b" + _CRED + r",\s+" + _NAME_TOKEN + r"\b(?!\s+[A-Z]{1,3}\b[,.])"                # …but not `RN, <Surname> J,` (author list)
+)
+
 # ----- Content allowlist — known-safe proper-noun phrases
 # Ralph's own name is case-sensitive (proper noun, not a substring match).
 # Bracketed placeholders like [Patient Name, DOB] are template literals.
-SELF_NAME_ALLOW = re.compile(r"\bRalph Martello\b")
+# v1.13: middle-initial and title forms (`Ralph D. Martello, MD`, `Dr. Martello`) — Pattern 7 priced 27
+# credential hits on the corpus and nearly all were this byline. Bounded to Ralph's own name: a family
+# member sharing the surname still blocks.
+SELF_NAME_ALLOW = re.compile(r"\b(?:Dr\.?\s+)?Ralph(?:\s+D\.?)?\s+Martello\b|\bDr\.?\s+Martello\b")
+# v1.13: a compound demonym is name-SHAPED and not a name. The bias-reference vignettes read
+# `45yo African American M`, which Pattern 7's name+age rule would otherwise flag.
+DEMONYM_PAIR_ALLOW = re.compile(
+    r"\b(?:African|Native|Asian|Hispanic|Latin|Pacific|Middle|South|North|Central|East|West|Alaska)"
+    r"[ -](?:American|Islander|Eastern|Asian|African|Latino|Latina|Native)s?\b"
+)
 # Strip ONLY literal placeholder vocabulary, never an arbitrary [Cap Cap] pair — the old
 # `[A-Z][a-z]+ [A-Z][a-z]+` form stripped a real bracketed `[<First> <Last>, DOB ...]` and
 # immunized it.
@@ -418,6 +499,7 @@ FIXTURE_PATH = re.compile(
     r"(^|/)("
     r"TestCase_|tests?/|test_data/|test-fixtures/|"
     r"fixtures/|scripts/test[-_]|scripts/demo[-_]|scripts/smoke[-_]|"
+    r"demo_case/|"   # v1.13: a synthetic demo record set (SourceMind) — same class as scripts/demo-
     r"demo_cases\.ts|test-complex-case\.ts|"
     # v1.12: `.github/` is no longer a PHI-content exemption — an ISSUE_TEMPLATE or workflow note
     # carrying a name+DOB was never fed to Pattern 2. It stays in BINARY_ALLOW_PATH (binaries
@@ -472,6 +554,7 @@ def strip_allowlisted(line):
     """
     line = SELF_NAME_ALLOW.sub("", line)
     line = BRACKET_PLACEHOLDER_ALLOW.sub("", line)
+    line = DEMONYM_PAIR_ALLOW.sub("", line)  # v1.13
     return line
 
 
@@ -501,10 +584,16 @@ def scan_slug(diff_lines):
     return hits
 
 
+DATE_TEMPLATE_TOKEN = re.compile(r"yyyy|yy|mm|dd")  # v1.12.1: doc templates, `reasoning/YYYY-MM-DD-[topic]`
+
+
 def _slug_token_ok(token):
-    """A slug token is not name-shaped when it is clinical vocabulary or a single case letter
-    (the `2026-04-18-case-A` convention — v1.12 census: 29 real case dirs, none name-shaped)."""
-    return len(token) == 1 or bool(DISEASE_ALLOWLIST.fullmatch(token))
+    """A slug token is not name-shaped when it is clinical vocabulary, a single case letter
+    (the `2026-04-18-case-A` convention — v1.12 census: 29 real case dirs, none name-shaped),
+    or a date-template placeholder (v1.12.1: the undated variant matched `reasoning/YYYY-MM`
+    in Maieutic's own docs — four lines, first seen on the reinit root commit)."""
+    return (len(token) == 1 or bool(DISEASE_ALLOWLIST.fullmatch(token))
+            or bool(DATE_TEMPLATE_TOKEN.fullmatch(token)))
 
 
 def scan_name_phi(diff_lines):
@@ -541,6 +630,26 @@ def scan_ssn(diff_lines):
         m = SSN_VALUE.search(strip_allowlisted(line))
         if m:
             hits.append((line.rstrip(), m.group(0)))
+    return hits
+
+
+def scan_prose(diff_lines):
+    """Pattern 7 (v1.13). Input: raw diff lines (already fixture-filtered). Returns [(line, match), ...].
+
+    Same allowlist strip as Pattern 2, so a self-name byline or a bracket placeholder on the line
+    cannot immunise a real name beside it.
+    """
+    hits = []
+    for line in diff_lines:
+        stripped = strip_allowlisted(line)
+        hit = (
+            NAME_NEAR_AGE.search(stripped)
+            or TITLE_THEN_NAME.search(stripped)
+            or NAME_THEN_CRED.search(stripped)
+            or CRED_THEN_NAME.search(stripped)
+        )
+        if hit:
+            hits.append((line.rstrip(), hit.group(0)))
     return hits
 
 
@@ -649,6 +758,8 @@ def run_scan(files, diff_lines, slug_paths=None, secret_lines=None):
         fails.append(("name_phi", line, m))
     for line, m in scan_ssn(diff_lines):
         fails.append(("ssn", line, m))
+    for line, m in scan_prose(diff_lines):  # v1.13
+        fails.append(("prose", line, m))
     # v1.9 (F27): secrets are scanned in EVERY file — a fixture/metadata exemption is a
     # statement about PHI-shaped test data, not about credentials.
     for line, kind, m in scan_secrets(secret_lines if secret_lines is not None else diff_lines):
@@ -687,6 +798,7 @@ def main():
     bin_hits = [f for f in fails if f[0] == "binary"]
     secret_hits = [f for f in fails if f[0] == "secret"]
     data_hits = [f for f in fails if f[0] == "data"]
+    prose_hits = [f for f in fails if f[0] == "prose"]  # v1.13
 
     if slug_hits:
         print(
@@ -712,6 +824,18 @@ def main():
         print("   Or rename identifiers to obvious placeholders (TEST_USER_001, etc.).")
         print("   Ralph's own name / a public figure: add the exact pair to SLUG_NAME_ALLOWLIST or")
         print("   SELF_NAME_ALLOW in phi_hook.py. Hooks are never bypassed.")
+        print()
+
+    if prose_hits:
+        print(
+            "⚠️  pre-commit: proper-noun name in clinical prose (beside an age, a title, or a credential):"
+        )
+        for _, line, m in prose_hits[:5]:
+            print(f"    {redact(line, m)[:140]}")
+        print()
+        print("   A staff or patient name needs no field label to be PHI. Use a role, or a")
+        print("   placeholder (<First> <Last>, <Surname>); synthetic vignettes go under a fixture path.")
+        print("   Ralph's own byline forms are allowlisted in SELF_NAME_ALLOW. Hooks are never bypassed.")
         print()
 
     if cred_hits:
