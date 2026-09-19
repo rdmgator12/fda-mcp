@@ -306,7 +306,7 @@ export const FdaSearchTermSchema = z.string()
   .min(1, 'Search term cannot be empty')
   .max(500, 'Search term cannot exceed 500 characters')
   .refine(
-    (term) => !/[<>\"'&]/.test(term),
+    (term) => !/[<>"'&]/.test(term),
     'Search term contains invalid characters'
   );
 

@@ -35,7 +35,7 @@ export class TopDrugsByAdverseEventsResource extends BaseResource {
   }
 
   private async fetchTopDrugsByAdverseEvents(): Promise<any> {
-    let { startDate, endDate } = this.calculateDateRange();
+    const { startDate, endDate } = this.calculateDateRange();
 
     // Use count parameter to get top drugs by adverse event count
     // URL encode the brackets for proper API formatting
@@ -146,21 +146,21 @@ export class TopDrugsByAdverseEventsResource extends BaseResource {
       const trendingAnalysis = {
         reportGenerated: new Date().toISOString(),
         analysisWindow: analysisWindow,
-        analysisPeriod: "Last 30 days",
-        dataSource: "FDA Adverse Event Reporting System (FAERS)",
+        analysisPeriod: 'Last 30 days',
+        dataSource: 'FDA Adverse Event Reporting System (FAERS)',
 
         summary: {
           totalTopDrugs: topDrugs.length,
           totalAdverseEvents: totalEvents,
           averageEventsPerDrug: topDrugs.length > 0 ? Math.round(totalEvents / topDrugs.length) : 0,
-          dataFreshness: "Real-time from FAERS database"
+          dataFreshness: 'Real-time from FAERS database'
         },
 
         topDrugsByAdverseEvents: topDrugs.map((drug: any, index: number) => ({
           rank: index + 1,
           drugName: drug.term,
           adverseEventCount: drug.count,
-          percentageOfTotal: topDrugs.length > 0 ? ((drug.count / totalEvents) * 100).toFixed(1) : "0.0"
+          percentageOfTotal: topDrugs.length > 0 ? ((drug.count / totalEvents) * 100).toFixed(1) : '0.0'
         })),
 
         seriousEventsAnalysis: seriousEventsData.map(drugData => ({
@@ -174,23 +174,23 @@ export class TopDrugsByAdverseEventsResource extends BaseResource {
         trendingInsights: this.generateTrendingInsights(topDrugs, totalEvents),
 
         methodology: {
-          dataSource: "FDA FAERS (Adverse Event Reporting System)",
-          countMethod: "Aggregated by drug name using FDA count API",
-          timeWindow: "Rolling 30-day window",
-          includedEvents: "All adverse events (serious and non-serious)",
+          dataSource: 'FDA FAERS (Adverse Event Reporting System)',
+          countMethod: 'Aggregated by drug name using FDA count API',
+          timeWindow: 'Rolling 30-day window',
+          includedEvents: 'All adverse events (serious and non-serious)',
           limitations: [
-            "Voluntary reporting system - underreporting expected",
-            "Counts reflect reporting volume, not incidence rates",
-            "Multiple reports for same patient/event possible",
-            "Drug name variations may affect aggregation"
+            'Voluntary reporting system - underreporting expected',
+            'Counts reflect reporting volume, not incidence rates',
+            'Multiple reports for same patient/event possible',
+            'Drug name variations may affect aggregation'
           ]
         },
 
         metadata: {
           queryDate: new Date().toISOString(),
-          fdaApiEndpoint: "drug/event.json with count parameter",
-          processingNote: "Data includes all medicinal products reported in adverse events",
-          updateFrequency: "Real-time (updated when resource is accessed)"
+          fdaApiEndpoint: 'drug/event.json with count parameter',
+          processingNote: 'Data includes all medicinal products reported in adverse events',
+          updateFrequency: 'Real-time (updated when resource is accessed)'
         }
       };
 
@@ -218,8 +218,8 @@ export class TopDrugsByAdverseEventsResource extends BaseResource {
         message: (error as Error).message,
         timestamp: new Date().toISOString(),
         fallbackRecommendation: 'Check FDA FAERS database directly or try again later',
-        dataSource: "FDA Adverse Event Reporting System (FAERS)",
-        analysisWindow: "Last 30 days"
+        dataSource: 'FDA Adverse Event Reporting System (FAERS)',
+        analysisWindow: 'Last 30 days'
       };
 
       return {
@@ -253,9 +253,9 @@ export class TopDrugsByAdverseEventsResource extends BaseResource {
     if (topDrugs.length >= 5) {
       const variationCoeff = this.calculateVariationCoefficient(topDrugs.slice(0, 5));
       if (variationCoeff > 0.5) {
-        insights.push("High variation in reporting volume suggests diverse drug usage patterns");
+        insights.push('High variation in reporting volume suggests diverse drug usage patterns');
       } else {
-        insights.push("Consistent reporting volume across top drugs indicates stable usage patterns");
+        insights.push('Consistent reporting volume across top drugs indicates stable usage patterns');
       }
     }
 

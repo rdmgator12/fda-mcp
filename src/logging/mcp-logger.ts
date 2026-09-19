@@ -24,9 +24,9 @@ export interface McpLoggerConfig {
 export class McpLogger {
   private minimumLevel: McpLogLevel = 'info';
   private loggerName?: string;
-  private rateLimitPerSecond: number = 10;
-  private lastSecond: number = 0;
-  private messagesThisSecond: number = 0;
+  private rateLimitPerSecond = 10;
+  private lastSecond = 0;
+  private messagesThisSecond = 0;
   private notificationCallback?: (message: McpLogMessage) => void;
 
   // Syslog severity level mapping (RFC 5424)

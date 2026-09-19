@@ -44,7 +44,7 @@ export class CurrentShortagesResource extends BaseResource {
       const result = {
         reportGenerated: new Date().toISOString(),
         totalCurrentShortages: currentShortages.length,
-        dataSource: "FDA Drug Shortage Database (OpenFDA)",
+        dataSource: 'FDA Drug Shortage Database (OpenFDA)',
 
         currentShortages: currentShortages.slice(0, 20).map((shortage: any) => ({
           productName: shortage.proprietary_name || shortage.generic_name || 'Unknown Product',
@@ -82,17 +82,17 @@ export class CurrentShortagesResource extends BaseResource {
         },
 
         resourceLinks: {
-          fdaShortageDatabase: "https://www.accessdata.fda.gov/scripts/drugshortages/",
-          reportShortage: "https://www.fda.gov/drugs/drug-shortages/reporting-drug-shortages",
-          guidanceDocuments: "https://www.fda.gov/drugs/drug-shortages"
+          fdaShortageDatabase: 'https://www.accessdata.fda.gov/scripts/drugshortages/',
+          reportShortage: 'https://www.fda.gov/drugs/drug-shortages/reporting-drug-shortages',
+          guidanceDocuments: 'https://www.fda.gov/drugs/drug-shortages'
         },
 
-        disclaimer: "This data is sourced from the FDA Drug Shortage Database via OpenFDA API. For the most current information, consult the FDA Drug Shortage Database directly.",
+        disclaimer: 'This data is sourced from the FDA Drug Shortage Database via OpenFDA API. For the most current information, consult the FDA Drug Shortage Database directly.',
 
         metadata: {
-          apiSource: "OpenFDA Drug Shortages endpoint",
-          updateFrequency: "Updated as manufacturers report to FDA",
-          dataLimitations: "Limited to FDA-reported shortages; may not include all market shortages",
+          apiSource: 'OpenFDA Drug Shortages endpoint',
+          updateFrequency: 'Updated as manufacturers report to FDA',
+          dataLimitations: 'Limited to FDA-reported shortages; may not include all market shortages',
           lastQuery: new Date().toISOString()
         }
       };
@@ -121,7 +121,7 @@ export class CurrentShortagesResource extends BaseResource {
         message: (error as Error).message,
         timestamp: new Date().toISOString(),
         fallbackRecommendation: 'Check FDA Drug Shortage Database directly at https://www.accessdata.fda.gov/scripts/drugshortages/',
-        dataSource: "FDA Drug Shortage Database (OpenFDA) - Error occurred"
+        dataSource: 'FDA Drug Shortage Database (OpenFDA) - Error occurred'
       };
 
       return {
@@ -171,7 +171,7 @@ export class CurrentShortagesResource extends BaseResource {
         shortageCount: count
       })),
       totalAffectedDrugs: Object.keys(genericGroups).length,
-      analysisNote: "Therapeutic area classification requires additional drug database integration"
+      analysisNote: 'Therapeutic area classification requires additional drug database integration'
     };
   }
 }

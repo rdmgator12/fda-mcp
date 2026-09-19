@@ -34,7 +34,7 @@ export abstract class BaseResource {
     resourceUri: string,
     name: string,
     description: string,
-    mimeType: string = 'text/plain'
+    mimeType = 'text/plain'
   ) {
     this.resourceUri = resourceUri;
     this.name = name;
