@@ -42,10 +42,12 @@ export class RateLimiter {
     this.maxRequests = options.maxRequests;
     this.keyGenerator = options.keyGenerator || ((id: string) => id);
 
-    // Clean up expired entries every minute
+    // Clean up expired entries every minute. Unref'd so this housekeeping
+    // timer never on its own keeps the host process alive.
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
     }, 60000);
+    this.cleanupInterval.unref();
   }
 
   public static getInstance(options?: RateLimitOptions): RateLimiter {
