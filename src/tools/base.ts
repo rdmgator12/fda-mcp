@@ -61,7 +61,7 @@ export class ToolCancellationToken implements CancellationToken {
     this._callbacks.forEach(callback => {
       try {
         callback(reason);
-      } catch (_error) {
+      } catch {
         // Ignore callback errors to prevent cascading failures
       }
     });
@@ -280,7 +280,7 @@ export abstract class BaseTool<TParams = Record<string, unknown>> {
     if (callback) {
       try {
         callback(progress);
-      } catch (_error) {
+      } catch {
         // Ignore callback errors
       }
     }

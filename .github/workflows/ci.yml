@@ -24,6 +24,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm run build
-      # Drift gate; no test step yet — this repo has no test runner.
+      # Needs the build above: the contract test drives build/index.js over stdio.
+      - run: npm test
+      # Drift gate.
       - run: npm audit --audit-level=high

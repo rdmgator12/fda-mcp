@@ -133,56 +133,56 @@ ${basePrompt}`;
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Originator Identification",
-        description: "Identify drug originator company using count query",
+        name: 'Originator Identification',
+        description: 'Identify drug originator company using count query',
         query: {
-          method: "lookup_drug",
-          search_term: "products.brand_name:HUMIRA",
-          search_type: "general",
-          count: "sponsor_name",
+          method: 'lookup_drug',
+          search_term: 'products.brand_name:HUMIRA',
+          search_type: 'general',
+          count: 'sponsor_name',
           limit: 1
         },
-        expectedFields: ["sponsor_name"],
-        notes: "Count query provides instant originator identification with 95% token reduction"
+        expectedFields: ['sponsor_name'],
+        notes: 'Count query provides instant originator identification with 95% token reduction'
       },
       {
-        name: "Safety Surveillance Profile",
-        description: "Get top adverse reactions using count query",
+        name: 'Safety Surveillance Profile',
+        description: 'Get top adverse reactions using count query',
         query: {
-          method: "lookup_drug",
-          search_term: "patient.drug.medicinalproduct:adalimumab",
-          search_type: "adverse_events",
-          count: "patient.reaction.reactionmeddrapt.exact",
+          method: 'lookup_drug',
+          search_term: 'patient.drug.medicinalproduct:adalimumab',
+          search_type: 'adverse_events',
+          count: 'patient.reaction.reactionmeddrapt.exact',
           limit: 8
         },
-        expectedFields: ["patient.reaction.reactionmeddrapt"],
-        notes: "Top adverse reactions with frequency counts for safety assessment"
+        expectedFields: ['patient.reaction.reactionmeddrapt'],
+        notes: 'Top adverse reactions with frequency counts for safety assessment'
       },
       {
-        name: "Regulatory Timeline Analysis",
-        description: "Get complete submission timeline using count query",
+        name: 'Regulatory Timeline Analysis',
+        description: 'Get complete submission timeline using count query',
         query: {
-          method: "lookup_drug",
-          search_term: "application_number:BLA125057",
-          search_type: "general",
-          count: "submissions.submission_status_date",
+          method: 'lookup_drug',
+          search_term: 'application_number:BLA125057',
+          search_type: 'general',
+          count: 'submissions.submission_status_date',
           limit: 10
         },
-        expectedFields: ["submissions.submission_status_date"],
-        notes: "Complete chronological timeline (2002-2025) with 90% token reduction"
+        expectedFields: ['submissions.submission_status_date'],
+        notes: 'Complete chronological timeline (2002-2025) with 90% token reduction'
       },
       {
-        name: "Supply Chain Risk Assessment",
-        description: "Analyze shortage status distribution",
+        name: 'Supply Chain Risk Assessment',
+        description: 'Analyze shortage status distribution',
         query: {
-          method: "lookup_drug",
-          search_term: "generic_name:adalimumab",
-          search_type: "shortages",
-          count: "status",
+          method: 'lookup_drug',
+          search_term: 'generic_name:adalimumab',
+          search_type: 'shortages',
+          count: 'status',
           limit: 5
         },
-        expectedFields: ["status"],
-        notes: "Immediate shortage status assessment with 85% token reduction"
+        expectedFields: ['status'],
+        notes: 'Immediate shortage status assessment with 85% token reduction'
       }
     ];
   }

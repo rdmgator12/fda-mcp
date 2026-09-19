@@ -72,9 +72,12 @@ export class CacheService {
       clearInterval(this.cleanupTimer);
     }
 
+    // Unref'd so this housekeeping timer never on its own keeps the host
+    // process alive.
     this.cleanupTimer = setInterval(() => {
       this.cleanup();
     }, this.cleanupInterval);
+    this.cleanupTimer.unref();
   }
 
   private cleanup(): void {

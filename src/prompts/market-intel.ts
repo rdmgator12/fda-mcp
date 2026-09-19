@@ -199,56 +199,56 @@ Execute each query sequentially and provide comprehensive FDA-focused market int
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Company Portfolio Analysis",
+        name: 'Company Portfolio Analysis',
         description: "Analyze company's product marketing status distribution",
         query: {
-          method: "lookup_drug",
-          search_term: "sponsor_name:\"PFIZER\"",
-          search_type: "general",
-          count: "products.marketing_status",
+          method: 'lookup_drug',
+          search_term: 'sponsor_name:"PFIZER"',
+          search_type: 'general',
+          count: 'products.marketing_status',
           limit: 15
         },
-        expectedFields: ["products.marketing_status"],
-        notes: "Shows portfolio health: Prescription vs Discontinued products"
+        expectedFields: ['products.marketing_status'],
+        notes: 'Shows portfolio health: Prescription vs Discontinued products'
       },
       {
-        name: "Regulatory Submission Activity",
+        name: 'Regulatory Submission Activity',
         description: "Assess company's regulatory pipeline and activity",
         query: {
-          method: "lookup_drug",
-          search_term: "sponsor_name:\"PFIZER\"",
-          search_type: "general",
-          count: "submissions.submission_type",
+          method: 'lookup_drug',
+          search_term: 'sponsor_name:"PFIZER"',
+          search_type: 'general',
+          count: 'submissions.submission_type',
           limit: 10
         },
-        expectedFields: ["submissions.submission_type"],
-        notes: "Indicates R&D momentum and regulatory engagement"
+        expectedFields: ['submissions.submission_type'],
+        notes: 'Indicates R&D momentum and regulatory engagement'
       },
       {
-        name: "Generic Competition Landscape",
-        description: "Count competitors in the same therapeutic area",
+        name: 'Generic Competition Landscape',
+        description: 'Count competitors in the same therapeutic area',
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.generic_name:\"atorvastatin\" AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "sponsor_name",
+          method: 'lookup_drug',
+          search_term: 'openfda.generic_name:"atorvastatin" AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'sponsor_name',
           limit: 10
         },
-        expectedFields: ["sponsor_name"],
-        notes: "Market concentration risk: fewer sponsors = higher market power"
+        expectedFields: ['sponsor_name'],
+        notes: 'Market concentration risk: fewer sponsors = higher market power'
       },
       {
-        name: "Therapeutic Equivalence Analysis",
+        name: 'Therapeutic Equivalence Analysis',
         description: "Check drug's therapeutic equivalence rating",
         query: {
-          method: "lookup_drug",
-          search_term: "products.brand_name:\"LIPITOR\"",
-          search_type: "general",
+          method: 'lookup_drug',
+          search_term: 'products.brand_name:"LIPITOR"',
+          search_type: 'general',
           limit: 1,
-          fields_for_general: "products.te_code"
+          fields_for_general: 'products.te_code'
         },
-        expectedFields: ["products.te_code"],
-        notes: "TE codes indicate generic substitution potential and competitive protection"
+        expectedFields: ['products.te_code'],
+        notes: 'TE codes indicate generic substitution potential and competitive protection'
       }
     ];
   }

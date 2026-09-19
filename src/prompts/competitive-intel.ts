@@ -121,54 +121,54 @@ ${basePrompt}`;
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Company Application Count",
+        name: 'Company Application Count',
         description: "Count company's prescription drug applications",
         query: {
-          method: "lookup_drug",
-          search_term: "sponsor_name:PFIZER AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "application_number",
+          method: 'lookup_drug',
+          search_term: 'sponsor_name:PFIZER AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'application_number',
           limit: 15
         },
-        expectedFields: ["application_number"],
+        expectedFields: ['application_number'],
         notes: "Shows company's active prescription drug portfolio size"
       },
       {
-        name: "Brand Names Analysis",
+        name: 'Brand Names Analysis',
         description: "Get company's brand names using count query",
         query: {
-          method: "lookup_drug",
-          search_term: "sponsor_name:PFIZER AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "openfda.brand_name.exact"
+          method: 'lookup_drug',
+          search_term: 'sponsor_name:PFIZER AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'openfda.brand_name.exact'
         },
-        expectedFields: ["openfda.brand_name"],
-        notes: "Count query provides brand name distribution efficiently"
+        expectedFields: ['openfda.brand_name'],
+        notes: 'Count query provides brand name distribution efficiently'
       },
       {
-        name: "Route Specialization",
+        name: 'Route Specialization',
         description: "Analyze company's delivery route focus",
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.manufacturer_name:PFIZER",
-          search_type: "general",
-          count: "openfda.route.exact"
+          method: 'lookup_drug',
+          search_term: 'openfda.manufacturer_name:PFIZER',
+          search_type: 'general',
+          count: 'openfda.route.exact'
         },
-        expectedFields: ["openfda.route"],
-        notes: "Shows expertise in specific delivery methods (subcutaneous, oral, etc.)"
+        expectedFields: ['openfda.route'],
+        notes: 'Shows expertise in specific delivery methods (subcutaneous, oral, etc.)'
       },
       {
-        name: "Regulatory Timeline",
-        description: "Get complete regulatory submission timeline",
+        name: 'Regulatory Timeline',
+        description: 'Get complete regulatory submission timeline',
         query: {
-          method: "lookup_drug",
-          search_term: "sponsor_name:PFIZER",
-          search_type: "general",
-          count: "submissions.submission_status_date",
+          method: 'lookup_drug',
+          search_term: 'sponsor_name:PFIZER',
+          search_type: 'general',
+          count: 'submissions.submission_status_date',
           limit: 1
         },
-        expectedFields: ["submissions.submission_status_date"],
-        notes: "Optimized query for 95% token reduction while maintaining full timeline intelligence"
+        expectedFields: ['submissions.submission_status_date'],
+        notes: 'Optimized query for 95% token reduction while maintaining full timeline intelligence'
       }
     ];
   }
