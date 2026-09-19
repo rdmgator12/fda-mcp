@@ -49,9 +49,9 @@ export class RecentSafetyAlertsResource extends BaseResource {
 
       const safetyAlerts = {
         reportGenerated: new Date().toISOString(),
-        analysisWindow: "Last 90 days",
+        analysisWindow: 'Last 90 days',
         totalActiveAlerts: recentSafetyActions.length,
-        dataSource: "FDA Drug Enforcement Database (OpenFDA)",
+        dataSource: 'FDA Drug Enforcement Database (OpenFDA)',
 
         urgentSafetyAlerts: recentSafetyActions
           .filter((action: any) => action.classification === 'Class I')

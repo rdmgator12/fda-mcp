@@ -133,56 +133,56 @@ ${basePrompt}`;
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Active Shortages in Therapeutic Area",
-        description: "Find current shortages with comprehensive details",
+        name: 'Active Shortages in Therapeutic Area',
+        description: 'Find current shortages with comprehensive details',
         query: {
-          method: "lookup_drug",
-          search_term: "therapeutic_category:Oncology",
-          search_type: "shortages",
+          method: 'lookup_drug',
+          search_term: 'therapeutic_category:Oncology',
+          search_type: 'shortages',
           limit: 5,
-          fields_for_shortages: "generic_name,company_name,status,shortage_reason"
+          fields_for_shortages: 'generic_name,company_name,status,shortage_reason'
         },
-        expectedFields: ["generic_name", "company_name", "status", "shortage_reason"],
-        notes: "Therapeutic categories are case-sensitive: use proper case"
+        expectedFields: ['generic_name', 'company_name', 'status', 'shortage_reason'],
+        notes: 'Therapeutic categories are case-sensitive: use proper case'
       },
       {
-        name: "Shortage Patterns by Category",
-        description: "Count which therapeutic areas have most shortages",
+        name: 'Shortage Patterns by Category',
+        description: 'Count which therapeutic areas have most shortages',
         query: {
-          method: "lookup_drug",
-          search_term: "status:Current",
-          search_type: "shortages",
-          count: "therapeutic_category",
+          method: 'lookup_drug',
+          search_term: 'status:Current',
+          search_type: 'shortages',
+          count: 'therapeutic_category',
           limit: 8
         },
-        expectedFields: ["therapeutic_category"],
-        notes: "Use status:Current to filter for active shortages only"
+        expectedFields: ['therapeutic_category'],
+        notes: 'Use status:Current to filter for active shortages only'
       },
       {
-        name: "Market Concentration Risk",
-        description: "Count manufacturers supplying a specific drug",
+        name: 'Market Concentration Risk',
+        description: 'Count manufacturers supplying a specific drug',
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.generic_name:adalimumab AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "sponsor_name",
+          method: 'lookup_drug',
+          search_term: 'openfda.generic_name:adalimumab AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'sponsor_name',
           limit: 5
         },
-        expectedFields: ["sponsor_name"],
-        notes: "Fewer sponsors = higher concentration risk and shortage vulnerability"
+        expectedFields: ['sponsor_name'],
+        notes: 'Fewer sponsors = higher concentration risk and shortage vulnerability'
       },
       {
-        name: "Upcoming Supply Exits",
-        description: "Find drugs with discontinuation dates",
+        name: 'Upcoming Supply Exits',
+        description: 'Find drugs with discontinuation dates',
         query: {
-          method: "lookup_drug",
-          search_term: "discontinued_date:*",
-          search_type: "shortages",
+          method: 'lookup_drug',
+          search_term: 'discontinued_date:*',
+          search_type: 'shortages',
           limit: 3,
-          fields_for_shortages: "generic_name,company_name,discontinued_date"
+          fields_for_shortages: 'generic_name,company_name,discontinued_date'
         },
-        expectedFields: ["generic_name", "company_name", "discontinued_date"],
-        notes: "Provides actual discontinuation timeline with dates and companies"
+        expectedFields: ['generic_name', 'company_name', 'discontinued_date'],
+        notes: 'Provides actual discontinuation timeline with dates and companies'
       }
     ];
   }

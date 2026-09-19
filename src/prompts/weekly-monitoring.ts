@@ -262,56 +262,56 @@ Execute each query sequentially and generate a comprehensive weekly pharmaceutic
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Weekly Regulatory Activity",
-        description: "Monitor regulatory submissions from last week",
+        name: 'Weekly Regulatory Activity',
+        description: 'Monitor regulatory submissions from last week',
         query: {
-          method: "lookup_drug",
-          search_term: "submissions.submission_status_date:[20240901+TO+20240907]",
-          search_type: "general",
+          method: 'lookup_drug',
+          search_term: 'submissions.submission_status_date:[20240901+TO+20240907]',
+          search_type: 'general',
           limit: 10,
-          fields_for_general: "sponsor_name"
+          fields_for_general: 'sponsor_name'
         },
-        expectedFields: ["sponsor_name"],
-        notes: "Date format: YYYYMMDD. Calculate date ranges from current_date parameter"
+        expectedFields: ['sponsor_name'],
+        notes: 'Date format: YYYYMMDD. Calculate date ranges from current_date parameter'
       },
       {
-        name: "Priority Review Pipeline",
-        description: "Find drugs in priority review status",
+        name: 'Priority Review Pipeline',
+        description: 'Find drugs in priority review status',
         query: {
-          method: "lookup_drug",
-          search_term: "submissions.review_priority:\"PRIORITY\"",
-          search_type: "general",
+          method: 'lookup_drug',
+          search_term: 'submissions.review_priority:"PRIORITY"',
+          search_type: 'general',
           limit: 8,
-          fields_for_general: "openfda.brand_name"
+          fields_for_general: 'openfda.brand_name'
         },
-        expectedFields: ["openfda.brand_name"],
-        notes: "PRIORITY must be quoted. Shows expedited review drugs"
+        expectedFields: ['openfda.brand_name'],
+        notes: 'PRIORITY must be quoted. Shows expedited review drugs'
       },
       {
-        name: "Weekly Adverse Events",
-        description: "Count adverse events received in specific week",
+        name: 'Weekly Adverse Events',
+        description: 'Count adverse events received in specific week',
         query: {
-          method: "lookup_drug",
-          search_term: "receivedate:[20240901+TO+20240907]",
-          search_type: "adverse_events",
-          count: "patient.drug.medicinalproduct",
+          method: 'lookup_drug',
+          search_term: 'receivedate:[20240901+TO+20240907]',
+          search_type: 'adverse_events',
+          count: 'patient.drug.medicinalproduct',
           limit: 10
         },
-        expectedFields: ["patient.drug.medicinalproduct"],
-        notes: "Remove .exact suffix from count parameter"
+        expectedFields: ['patient.drug.medicinalproduct'],
+        notes: 'Remove .exact suffix from count parameter'
       },
       {
-        name: "Current Drug Shortages",
-        description: "Monitor active shortages for specific companies",
+        name: 'Current Drug Shortages',
+        description: 'Monitor active shortages for specific companies',
         query: {
-          method: "lookup_drug",
-          search_term: "status:\"Current\" AND company_name:\"PFIZER\"",
-          search_type: "shortages",
+          method: 'lookup_drug',
+          search_term: 'status:"Current" AND company_name:"PFIZER"',
+          search_type: 'shortages',
           limit: 10,
-          fields_for_shortages: "generic_name"
+          fields_for_shortages: 'generic_name'
         },
-        expectedFields: ["generic_name"],
-        notes: "Use fields_for_shortages for shortage data, single field only"
+        expectedFields: ['generic_name'],
+        notes: 'Use fields_for_shortages for shortage data, single field only'
       }
     ];
   }

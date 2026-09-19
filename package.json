@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc -p tsconfig.test.json",
     "test": "npm run typecheck:tests && node --import tsx --test $(find tests -name '*.test.ts' | sort)",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'"
   },
   "keywords": [
     "mcp",

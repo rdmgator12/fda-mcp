@@ -115,11 +115,11 @@ class SettingsManager {
     // Define fallback settings for when config file is missing
     this.fallbackSettings = {
       server: {
-        name: "FDA MCP Server",
-        version: "1.0.0",
-        description: "FDA MCP Server for drug and device information lookup",
+        name: 'FDA MCP Server',
+        version: '1.0.0',
+        description: 'FDA MCP Server for drug and device information lookup',
         enableLogging: true,
-        logLevel: "info"
+        logLevel: 'info'
       },
       features: {
         tools: {
@@ -151,7 +151,7 @@ class SettingsManager {
       api: {
         fda: {
           enabled: true,
-          baseUrl: "https://api.fda.gov",
+          baseUrl: 'https://api.fda.gov',
           rateLimiting: {
             enabled: true,
             requestsPerMinute: 240,

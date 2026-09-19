@@ -118,7 +118,7 @@ export class RecentApprovalsResource extends BaseResource {
       recentApprovals.sort((a, b) => new Date(b.approvalDate).getTime() - new Date(a.approvalDate).getTime());
 
       const approvalData = {
-        reportPeriod: "Last 90 days (live FDA data)",
+        reportPeriod: 'Last 90 days (live FDA data)',
         lastUpdated: new Date().toISOString(),
         totalApprovals: recentApprovals.length,
 
@@ -153,10 +153,10 @@ export class RecentApprovalsResource extends BaseResource {
         })(),
 
         metadata: {
-          dataSource: "FDA OpenFDA API - Drug Applications Database",
-          analysisScope: "Last 90 days only - real FDA approval dates",
-          updateFrequency: "Dynamic - fetched live on every request",
-          methodology: "No caching - fresh FDA API call each time",
+          dataSource: 'FDA OpenFDA API - Drug Applications Database',
+          analysisScope: 'Last 90 days only - real FDA approval dates',
+          updateFrequency: 'Dynamic - fetched live on every request',
+          methodology: 'No caching - fresh FDA API call each time',
           queryWindow: `${cutoffDate.toISOString().split('T')[0]} to ${new Date().toISOString().split('T')[0]}`,
           apiCallsUsed: {
             drugApprovals: 'success',

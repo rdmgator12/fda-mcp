@@ -14,7 +14,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.ts'],
+    files: ['src/**/*.ts', 'tests/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -34,8 +34,14 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-inferrable-types': 'warn',
 
-      // General rules
-      'no-console': 'warn',
+      // General rules.
+      //
+      // This is a stdio MCP server: stdout carries the JSON-RPC stream, so a
+      // console.log there corrupts the transport and is a bug, not a style
+      // nit - hence 'error' rather than the default 'warn'. console.error and
+      // console.warn go to stderr, which is the server's deliberate channel
+      // for diagnostics, so they are allowed.
+      'no-console': ['error', { allow: ['error', 'warn'] }],
       'no-debugger': 'error',
       'prefer-const': 'error',
       'no-var': 'error',
