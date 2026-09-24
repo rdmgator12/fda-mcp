@@ -111,56 +111,56 @@ ${basePrompt}`;
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Adverse Events Total Count",
-        description: "Get total number of adverse event reports for a drug",
+        name: 'Adverse Events Total Count',
+        description: 'Get total number of adverse event reports for a drug',
         query: {
-          method: "lookup_drug",
-          search_term: "patient.drug.medicinalproduct:\"aspirin\"",
-          search_type: "adverse_events",
-          field_exists: "patient.reaction.reactionmeddrapt",
+          method: 'lookup_drug',
+          search_term: 'patient.drug.medicinalproduct:"aspirin"',
+          search_type: 'adverse_events',
+          field_exists: 'patient.reaction.reactionmeddrapt',
           limit: 1
         },
-        expectedFields: ["patient.reaction.reactionmeddrapt"],
-        notes: "field_exists parameter validates reports have reaction data"
+        expectedFields: ['patient.reaction.reactionmeddrapt'],
+        notes: 'field_exists parameter validates reports have reaction data'
       },
       {
-        name: "Top Adverse Reactions",
-        description: "Count most frequently reported adverse reactions",
+        name: 'Top Adverse Reactions',
+        description: 'Count most frequently reported adverse reactions',
         query: {
-          method: "lookup_drug",
-          search_term: "patient.drug.medicinalproduct:\"aspirin\"",
-          search_type: "adverse_events",
-          count: "patient.reaction.reactionmeddrapt",
+          method: 'lookup_drug',
+          search_term: 'patient.drug.medicinalproduct:"aspirin"',
+          search_type: 'adverse_events',
+          count: 'patient.reaction.reactionmeddrapt',
           limit: 10
         },
-        expectedFields: ["patient.reaction.reactionmeddrapt"],
-        notes: "Note: Remove .exact suffix from count parameter"
+        expectedFields: ['patient.reaction.reactionmeddrapt'],
+        notes: 'Note: Remove .exact suffix from count parameter'
       },
       {
-        name: "Serious Events by Gender",
-        description: "Analyze serious adverse events by patient gender",
+        name: 'Serious Events by Gender',
+        description: 'Analyze serious adverse events by patient gender',
         query: {
-          method: "lookup_drug",
-          search_term: "patient.drug.medicinalproduct:\"aspirin\" AND serious:1",
-          search_type: "adverse_events",
-          count: "patient.patientsex",
+          method: 'lookup_drug',
+          search_term: 'patient.drug.medicinalproduct:"aspirin" AND serious:1',
+          search_type: 'adverse_events',
+          count: 'patient.patientsex',
           limit: 5
         },
-        expectedFields: ["patient.patientsex"],
-        notes: "serious:1 filters for serious events only. Gender codes: 1=male, 2=female"
+        expectedFields: ['patient.patientsex'],
+        notes: 'serious:1 filters for serious events only. Gender codes: 1=male, 2=female'
       },
       {
-        name: "Death Events by Age",
-        description: "Analyze fatal events by patient age at onset",
+        name: 'Death Events by Age',
+        description: 'Analyze fatal events by patient age at onset',
         query: {
-          method: "lookup_drug",
-          search_term: "patient.drug.medicinalproduct:\"aspirin\" AND seriousnessdeath:1",
-          search_type: "adverse_events",
-          count: "patient.patientonsetage",
+          method: 'lookup_drug',
+          search_term: 'patient.drug.medicinalproduct:"aspirin" AND seriousnessdeath:1',
+          search_type: 'adverse_events',
+          count: 'patient.patientonsetage',
           limit: 8
         },
-        expectedFields: ["patient.patientonsetage"],
-        notes: "seriousnessdeath:1 filters for fatal outcomes only"
+        expectedFields: ['patient.patientonsetage'],
+        notes: 'seriousnessdeath:1 filters for fatal outcomes only'
       }
     ];
   }

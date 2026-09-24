@@ -44,7 +44,7 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
 
       const result = {
         reportGenerated: new Date().toISOString(),
-        dataSource: "FDA Multi-Database Analysis (Shortages, FAERS, Drugs@FDA)",
+        dataSource: 'FDA Multi-Database Analysis (Shortages, FAERS, Drugs@FDA)',
 
         executiveSummary: {
           totalAreasAnalyzed: currentShortageData.results.length,
@@ -108,7 +108,7 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
           },
 
           marketConcentration: {
-            title: "Market Concentration - Top Manufacturers by Prescription Products (Top 15)",
+            title: 'Market Concentration - Top Manufacturers by Prescription Products (Top 15)',
             data: marketConcentrationData.results.slice(0, 15).map((item: any) => ({
               rank: marketConcentrationData.results.indexOf(item) + 1,
               manufacturer: item.term,
@@ -121,7 +121,7 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
               totalProductsTop15: marketConcentrationData.results.slice(0, 15).reduce((sum: number, r: any) => sum + r.count, 0),
               manufacturersAnalyzed: marketConcentrationData.results.length,
               tier1Manufacturers: 5,
-              concentrationIndex: "Market shows moderate concentration in top 5 manufacturers"
+              concentrationIndex: 'Market shows moderate concentration in top 5 manufacturers'
             }
           }
         },
@@ -130,18 +130,18 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
 
         strategicRecommendations: {
           immediateActions: [
-            "Establish emergency procurement agreements with alternative suppliers for anesthesia drugs",
-            "Implement enhanced safety monitoring protocols for psychiatric medications",
-            "Develop pediatric-specific contingency plans with specialized manufacturers",
-            "Create strategic reserves for top 5 critical therapeutic areas",
-            "Initiate supplier diversification programs for high-concentration risk areas"
+            'Establish emergency procurement agreements with alternative suppliers for anesthesia drugs',
+            'Implement enhanced safety monitoring protocols for psychiatric medications',
+            'Develop pediatric-specific contingency plans with specialized manufacturers',
+            'Create strategic reserves for top 5 critical therapeutic areas',
+            'Initiate supplier diversification programs for high-concentration risk areas'
           ],
           longTermStrategy: [
-            "Investment in domestic manufacturing capabilities for essential categories",
-            "Regulatory incentives for maintaining production of critical but low-margin drugs",
-            "Development of real-time shortage prediction systems for proactive response",
-            "Establish public-private partnerships for critical drug manufacturing",
-            "Create financial incentives for maintaining redundant manufacturing capacity"
+            'Investment in domestic manufacturing capabilities for essential categories',
+            'Regulatory incentives for maintaining production of critical but low-margin drugs',
+            'Development of real-time shortage prediction systems for proactive response',
+            'Establish public-private partnerships for critical drug manufacturing',
+            'Create financial incentives for maintaining redundant manufacturing capacity'
           ],
           monitoringPriorities: {
             criticalShortageAreas: riskAssessment.criticalAreas,
@@ -154,57 +154,57 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
         },
 
         methodology: {
-          dataIntegration: "Multi-factor analysis combining shortage frequency, discontinuation risk, and safety signals",
-          riskScoring: "Weighted composite scoring with shortage burden (40%), safety signals (30%), discontinuation risk (20%), market concentration (10%)",
-          refreshFrequency: "Weekly analysis with daily shortage monitoring",
-          validationApproach: "Cross-referenced with industry shortage reports and regulatory alerts",
+          dataIntegration: 'Multi-factor analysis combining shortage frequency, discontinuation risk, and safety signals',
+          riskScoring: 'Weighted composite scoring with shortage burden (40%), safety signals (30%), discontinuation risk (20%), market concentration (10%)',
+          refreshFrequency: 'Weekly analysis with daily shortage monitoring',
+          validationApproach: 'Cross-referenced with industry shortage reports and regulatory alerts',
           dataSourceDetails: {
             shortagesDatabase: {
-              endpoint: "FDA Drug Shortages Database",
-              coverage: "All manufacturer-reported shortages to FDA",
-              updateFrequency: "Real-time as manufacturers report",
-              recordCount: "2000+ active shortage records analyzed"
+              endpoint: 'FDA Drug Shortages Database',
+              coverage: 'All manufacturer-reported shortages to FDA',
+              updateFrequency: 'Real-time as manufacturers report',
+              recordCount: '2000+ active shortage records analyzed'
             },
             adverseEventsDatabase: {
-              endpoint: "FDA Adverse Event Reporting System (FAERS)",
-              coverage: "Serious adverse events from healthcare providers and manufacturers",
-              updateFrequency: "Quarterly FDA database updates",
-              recordCount: "18M+ serious adverse event records analyzed"
+              endpoint: 'FDA Adverse Event Reporting System (FAERS)',
+              coverage: 'Serious adverse events from healthcare providers and manufacturers',
+              updateFrequency: 'Quarterly FDA database updates',
+              recordCount: '18M+ serious adverse event records analyzed'
             },
             drugsDatabase: {
-              endpoint: "Drugs@FDA Database",
-              coverage: "All FDA-approved prescription drugs",
-              updateFrequency: "Daily FDA updates",
-              recordCount: "40K+ approved drug records analyzed"
+              endpoint: 'Drugs@FDA Database',
+              coverage: 'All FDA-approved prescription drugs',
+              updateFrequency: 'Daily FDA updates',
+              recordCount: '40K+ approved drug records analyzed'
             }
           },
           analyticalFramework: {
             riskThresholds: {
-              critical: "Top 10% of each risk category (highest impact areas)",
-              high: "Top 25% of each risk category (significant impact areas)",
-              medium: "Below top 25% but above baseline",
-              low: "Baseline risk levels"
+              critical: 'Top 10% of each risk category (highest impact areas)',
+              high: 'Top 25% of each risk category (significant impact areas)',
+              medium: 'Below top 25% but above baseline',
+              low: 'Baseline risk levels'
             },
-            convergenceAnalysis: "Areas appearing in top 5 of multiple risk categories flagged for priority intervention",
-            temporalAnalysis: "Trend analysis over 12-month rolling window for shortage patterns"
+            convergenceAnalysis: 'Areas appearing in top 5 of multiple risk categories flagged for priority intervention',
+            temporalAnalysis: 'Trend analysis over 12-month rolling window for shortage patterns'
           }
         },
 
         resourceLinks: {
-          fdaShortageDatabase: "https://www.accessdata.fda.gov/scripts/drugshortages/",
-          faersDatabase: "https://www.fda.gov/drugs/surveillance/questions-and-answers-fdas-adverse-event-reporting-system-faers",
-          drugApprovalDatabase: "https://www.accessdata.fda.gov/scripts/cder/daf/",
-          reportShortage: "https://www.fda.gov/drugs/drug-shortages/reporting-drug-shortages"
+          fdaShortageDatabase: 'https://www.accessdata.fda.gov/scripts/drugshortages/',
+          faersDatabase: 'https://www.fda.gov/drugs/surveillance/questions-and-answers-fdas-adverse-event-reporting-system-faers',
+          drugApprovalDatabase: 'https://www.accessdata.fda.gov/scripts/cder/daf/',
+          reportShortage: 'https://www.fda.gov/drugs/drug-shortages/reporting-drug-shortages'
         },
 
-        disclaimer: "This intelligence report combines multiple FDA databases for strategic analysis. For operational decisions, consult individual FDA databases directly and validate with current market conditions.",
+        disclaimer: 'This intelligence report combines multiple FDA databases for strategic analysis. For operational decisions, consult individual FDA databases directly and validate with current market conditions.',
 
         metadata: {
-          analysisScope: "20 therapeutic areas across 4 risk dimensions",
-          dataPoints: "2M+ shortage records, 18M+ adverse event reports, 40K+ drug approvals, 15+ major manufacturers analyzed",
-          refreshCycle: "Weekly comprehensive analysis with daily shortage monitoring",
+          analysisScope: '20 therapeutic areas across 4 risk dimensions',
+          dataPoints: '2M+ shortage records, 18M+ adverse event reports, 40K+ drug approvals, 15+ major manufacturers analyzed',
+          refreshCycle: 'Weekly comprehensive analysis with daily shortage monitoring',
           lastQuery: new Date().toISOString(),
-          confidenceLevel: "High - based on official FDA databases",
+          confidenceLevel: 'High - based on official FDA databases',
           coverageMetrics: {
             therapeuticAreasAnalyzed: 20,
             shortageRecordsProcessed: currentShortageData.results.reduce((sum: number, r: any) => sum + r.count, 0),
@@ -213,22 +213,22 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
             manufacturersAnalyzed: marketConcentrationData.results.length
           },
           qualityAssurance: {
-            dataValidation: "Cross-validation against multiple FDA endpoints",
-            outlierDetection: "Statistical outlier analysis for data quality",
-            trendValidation: "Historical trend analysis for consistency",
-            expertReview: "Quarterly review by pharmaceutical supply chain experts"
+            dataValidation: 'Cross-validation against multiple FDA endpoints',
+            outlierDetection: 'Statistical outlier analysis for data quality',
+            trendValidation: 'Historical trend analysis for consistency',
+            expertReview: 'Quarterly review by pharmaceutical supply chain experts'
           },
           limitations: [
-            "Analysis limited to FDA-reported data; may not capture all market disruptions",
-            "Safety signals reflect reporting patterns, not necessarily causation",
-            "Market concentration based on FDA approvals, not actual market share",
-            "International supply chain factors not included in current analysis"
+            'Analysis limited to FDA-reported data; may not capture all market disruptions',
+            'Safety signals reflect reporting patterns, not necessarily causation',
+            'Market concentration based on FDA approvals, not actual market share',
+            'International supply chain factors not included in current analysis'
           ],
           updateSchedule: {
-            dailyUpdates: "Shortage status monitoring",
-            weeklyUpdates: "Comprehensive risk assessment refresh",
-            monthlyUpdates: "Trend analysis and pattern recognition",
-            quarterlyUpdates: "Methodology review and calibration"
+            dailyUpdates: 'Shortage status monitoring',
+            weeklyUpdates: 'Comprehensive risk assessment refresh',
+            monthlyUpdates: 'Trend analysis and pattern recognition',
+            quarterlyUpdates: 'Methodology review and calibration'
           }
         }
       };
@@ -257,7 +257,7 @@ export class HighRiskTherapeuticAreasResource extends BaseResource {
         message: (error as Error).message,
         timestamp: new Date().toISOString(),
         fallbackRecommendation: 'Check individual FDA databases for current shortage and safety information',
-        dataSource: "FDA Multi-Database Analysis - Error occurred"
+        dataSource: 'FDA Multi-Database Analysis - Error occurred'
       };
 
       return {

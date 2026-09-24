@@ -122,56 +122,56 @@ ${basePrompt}`;
   protected getPromptSpecificExamples(): WorkingExample[] {
     return [
       {
-        name: "Brand Drug Details",
-        description: "Get brand drug details and originator information",
+        name: 'Brand Drug Details',
+        description: 'Get brand drug details and originator information',
         query: {
-          method: "lookup_drug",
-          search_term: "products.brand_name:HUMIRA OR openfda.generic_name:adalimumab",
-          search_type: "general",
+          method: 'lookup_drug',
+          search_term: 'products.brand_name:HUMIRA OR openfda.generic_name:adalimumab',
+          search_type: 'general',
           limit: 1,
-          fields_for_general: "openfda.brand_name"
+          fields_for_general: 'openfda.brand_name'
         },
-        expectedFields: ["openfda.brand_name"],
-        notes: "Identifies brand drug and originator information"
+        expectedFields: ['openfda.brand_name'],
+        notes: 'Identifies brand drug and originator information'
       },
       {
-        name: "Total Competitive Landscape",
-        description: "Count all sponsors manufacturing the generic drug",
+        name: 'Total Competitive Landscape',
+        description: 'Count all sponsors manufacturing the generic drug',
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.generic_name:adalimumab AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "sponsor_name",
+          method: 'lookup_drug',
+          search_term: 'openfda.generic_name:adalimumab AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'sponsor_name',
           limit: 8
         },
-        expectedFields: ["sponsor_name"],
-        notes: "Shows competitive intensity: more sponsors = higher competition"
+        expectedFields: ['sponsor_name'],
+        notes: 'Shows competitive intensity: more sponsors = higher competition'
       },
       {
-        name: "Reference vs Generic Distinction",
-        description: "Count reference vs generic drug classification",
+        name: 'Reference vs Generic Distinction',
+        description: 'Count reference vs generic drug classification',
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.generic_name:adalimumab AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "products.reference_drug",
+          method: 'lookup_drug',
+          search_term: 'openfda.generic_name:adalimumab AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'products.reference_drug',
           limit: 3
         },
-        expectedFields: ["products.reference_drug"],
-        notes: "Count query provides instant market maturity assessment"
+        expectedFields: ['products.reference_drug'],
+        notes: 'Count query provides instant market maturity assessment'
       },
       {
-        name: "Market Timeline Efficiency",
-        description: "Get application numbers for timeline analysis",
+        name: 'Market Timeline Efficiency',
+        description: 'Get application numbers for timeline analysis',
         query: {
-          method: "lookup_drug",
-          search_term: "openfda.generic_name:adalimumab AND products.marketing_status:Prescription",
-          search_type: "general",
-          count: "application_number",
+          method: 'lookup_drug',
+          search_term: 'openfda.generic_name:adalimumab AND products.marketing_status:Prescription',
+          search_type: 'general',
+          count: 'application_number',
           limit: 3
         },
-        expectedFields: ["application_number"],
-        notes: "Efficient timeline data using application number counts for market entry patterns"
+        expectedFields: ['application_number'],
+        notes: 'Efficient timeline data using application number counts for market entry patterns'
       }
     ];
   }

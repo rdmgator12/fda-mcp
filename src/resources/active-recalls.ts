@@ -110,16 +110,16 @@ export class ActiveRecallsResource extends BaseResource {
             classII: classIICount,
             classIII: Math.floor(Math.random() * 5) + 2,
             topReasons: [
-              "Manufacturing defects",
-              "Contamination",
-              "Labeling errors",
-              "Potency issues"
+              'Manufacturing defects',
+              'Contamination',
+              'Labeling errors',
+              'Potency issues'
             ],
             affectedTherapeuticAreas: [
-              "Diabetes management",
-              "Cardiovascular",
-              "Antibiotics",
-              "Pain management"
+              'Diabetes management',
+              'Cardiovascular',
+              'Antibiotics',
+              'Pain management'
             ]
           },
           devices: {
@@ -128,16 +128,16 @@ export class ActiveRecallsResource extends BaseResource {
             classII: 10,
             classIII: 2,
             topReasons: [
-              "Software malfunctions",
-              "Design defects",
-              "Sterility issues",
-              "Component failures"
+              'Software malfunctions',
+              'Design defects',
+              'Sterility issues',
+              'Component failures'
             ],
             affectedDeviceTypes: [
-              "Ventilators",
-              "Infusion pumps",
-              "Cardiac monitors",
-              "Surgical instruments"
+              'Ventilators',
+              'Infusion pumps',
+              'Cardiac monitors',
+              'Surgical instruments'
             ]
           },
           biologics: {
@@ -146,9 +146,9 @@ export class ActiveRecallsResource extends BaseResource {
             classII: 4,
             classIII: 1,
             topReasons: [
-              "Viral contamination",
-              "Storage temperature deviations",
-              "Manufacturing irregularities"
+              'Viral contamination',
+              'Storage temperature deviations',
+              'Manufacturing irregularities'
             ]
           },
           food: {
@@ -157,33 +157,33 @@ export class ActiveRecallsResource extends BaseResource {
             classII: 2,
             classIII: 1,
             topReasons: [
-              "Undeclared allergens",
-              "Bacterial contamination"
+              'Undeclared allergens',
+              'Bacterial contamination'
             ]
           }
         },
 
         companyPerformance: [
           {
-            company: "MediPharma Solutions",
+            company: 'MediPharma Solutions',
             activeRecalls: 3,
             riskScore: 8.5,
-            recallHistory: "Multiple quality issues in past 2 years",
-            recommendedAction: "Enhanced oversight required"
+            recallHistory: 'Multiple quality issues in past 2 years',
+            recommendedAction: 'Enhanced oversight required'
           },
           {
-            company: "Advanced Medical Systems",
+            company: 'Advanced Medical Systems',
             activeRecalls: 2,
             riskScore: 7.2,
-            recallHistory: "Software quality control issues",
-            recommendedAction: "Software validation review"
+            recallHistory: 'Software quality control issues',
+            recommendedAction: 'Software validation review'
           },
           {
-            company: "Generic Drug Co",
+            company: 'Generic Drug Co',
             activeRecalls: 4,
             riskScore: 6.8,
-            recallHistory: "Manufacturing defects pattern",
-            recommendedAction: "Facility inspection recommended"
+            recallHistory: 'Manufacturing defects pattern',
+            recommendedAction: 'Facility inspection recommended'
           }
         ],
 
@@ -195,37 +195,37 @@ export class ActiveRecallsResource extends BaseResource {
             estimatedPatientsAffected: 125000
           },
           marketImpact: {
-            drugShortageRisk: "High for insulin products",
-            alternativeTherapies: "Available but supply constrained",
-            priceImpact: "Temporary price increases expected"
+            drugShortageRisk: 'High for insulin products',
+            alternativeTherapies: 'Available but supply constrained',
+            priceImpact: 'Temporary price increases expected'
           },
           healthcareSystemImpact: {
             hospitalsAffected: 245,
-            proceduresDelayed: "Estimated 156 surgeries",
-            resourceReallocation: "ICU ventilator redistribution required"
+            proceduresDelayed: 'Estimated 156 surgeries',
+            resourceReallocation: 'ICU ventilator redistribution required'
           }
         },
 
         geographicAnalysis: {
           mostAffectedStates: [
-            { state: "California", recalls: 12, riskLevel: "high" },
-            { state: "Texas", recalls: 8, riskLevel: "medium" },
-            { state: "Florida", recalls: 7, riskLevel: "medium" },
-            { state: "New York", recalls: 6, riskLevel: "medium" }
+            { state: 'California', recalls: 12, riskLevel: 'high' },
+            { state: 'Texas', recalls: 8, riskLevel: 'medium' },
+            { state: 'Florida', recalls: 7, riskLevel: 'medium' },
+            { state: 'New York', recalls: 6, riskLevel: 'medium' }
           ],
           internationalImpact: {
             exportsAffected: true,
-            countriesNotified: ["Canada", "Mexico", "EU", "Japan"],
+            countriesNotified: ['Canada', 'Mexico', 'EU', 'Japan'],
             globalRecallsInitiated: 3
           }
         },
 
         recallEffectiveness: {
-          averageTimeToInitiation: "3.2 days from discovery",
+          averageTimeToInitiation: '3.2 days from discovery',
           consigneeResponse: {
-            contacted: "98.5%",
-            responded: "87.3%",
-            productsReturned: "76.8%"
+            contacted: '98.5%',
+            responded: '87.3%',
+            productsReturned: '76.8%'
           },
           publicNotification: {
             pressReleases: 8,
@@ -236,54 +236,54 @@ export class ActiveRecallsResource extends BaseResource {
 
         trendAnalysis: {
           compared_to_previous_period: {
-            totalRecalls: "+23% vs last 30 days",
-            classIRecalls: "+60% vs last 30 days",
-            deviceRecalls: "+45% vs last 30 days"
+            totalRecalls: '+23% vs last 30 days',
+            classIRecalls: '+60% vs last 30 days',
+            deviceRecalls: '+45% vs last 30 days'
           },
           emergingPatterns: [
-            "Increased software-related device recalls",
-            "Manufacturing quality issues in generic drugs",
-            "Supply chain contamination events"
+            'Increased software-related device recalls',
+            'Manufacturing quality issues in generic drugs',
+            'Supply chain contamination events'
           ],
           seasonalFactors: [
-            "Post-holiday manufacturing ramp-up issues",
-            "Cold storage failures during winter"
+            'Post-holiday manufacturing ramp-up issues',
+            'Cold storage failures during winter'
           ]
         },
 
         actionableInsights: [
-          "Class I insulin recall requires immediate diabetes patient outreach",
-          "Ventilator recall may impact ICU capacity planning",
-          "Software quality issues suggest need for enhanced device cybersecurity",
-          "Generic drug manufacturing quality declining - inspection priority",
-          "Supply chain vulnerabilities exposed in multiple recalls"
+          'Class I insulin recall requires immediate diabetes patient outreach',
+          'Ventilator recall may impact ICU capacity planning',
+          'Software quality issues suggest need for enhanced device cybersecurity',
+          'Generic drug manufacturing quality declining - inspection priority',
+          'Supply chain vulnerabilities exposed in multiple recalls'
         ],
 
         stakeholderActions: {
           healthcare_providers: [
-            "Verify insulin lot numbers for all diabetic patients",
-            "Implement backup ventilation protocols",
-            "Review recall notification procedures",
-            "Patient safety communication protocols"
+            'Verify insulin lot numbers for all diabetic patients',
+            'Implement backup ventilation protocols',
+            'Review recall notification procedures',
+            'Patient safety communication protocols'
           ],
           patients: [
-            "Check medication lot numbers against recall lists",
-            "Contact healthcare provider if using recalled products",
-            "Report adverse events related to recalled products"
+            'Check medication lot numbers against recall lists',
+            'Contact healthcare provider if using recalled products',
+            'Report adverse events related to recalled products'
           ],
           industry: [
-            "Review manufacturing quality systems",
-            "Enhance software validation protocols",
-            "Improve supply chain monitoring",
-            "Accelerate recall response procedures"
+            'Review manufacturing quality systems',
+            'Enhance software validation protocols',
+            'Improve supply chain monitoring',
+            'Accelerate recall response procedures'
           ]
         },
 
         metadata: {
-          dataSource: "FDA OpenFDA API - Drug Enforcement Database",
-          updateFrequency: "Real-time from FDA databases",
-          coverage: "FDA-regulated drug products",
-          methodology: "Live FDA API integration with risk assessment",
+          dataSource: 'FDA OpenFDA API - Drug Enforcement Database',
+          updateFrequency: 'Real-time from FDA databases',
+          coverage: 'FDA-regulated drug products',
+          methodology: 'Live FDA API integration with risk assessment',
           apiCallsUsed: {
             classIRecalls: classIData ? 'success' : 'failed',
             classIIRecalls: classIIData ? 'success' : 'failed'
