@@ -38,6 +38,55 @@ per IP; with a key, the limit is 120,000 request/day per key. Register a free ke
 at <https://open.fda.gov/apis/authentication/>. Copy `.env.example` to `.env` and
 fill in your value for local development.
 
+## Development
+
+```bash
+npm ci
+npm run typecheck   # tsc --noEmit over src/
+npm run build       # compile to build/
+npm test            # type-check the tests, then run them
+npm run lint
+```
+
+CI runs all of these on Node 20 and 22, plus `npm audit --audit-level=high`.
+
+### Tests
+
+`npm test` runs the suite with Node's built-in test runner, loaded through
+`tsx`, so there is no separate test framework to install. `tsconfig.test.json`
+type-checks `tests/` first, since the build config excludes test files.
+
+- `tests/contract/` starts `build/index.js` as a child process and drives it
+  over stdio. It pins what the server advertises: its name and version, the
+  `fda_info` tool and its input schema, the five resource URIs and the six
+  prompts. It also asserts that stdout carries nothing but JSON-RPC, because
+  anything else there corrupts the transport - diagnostics belong on stderr.
+
+  **Run `npm run build` before `npm test`**, or the contract test has nothing
+  to start. CI does this in order.
+
+  When you change the tool, resources or prompts on purpose, update the
+  expectation lists at the top of `tests/contract/mcp-contract.test.ts` in the
+  same commit, and say so in the pull request. A failure there means the
+  advertised surface moved, which is usually worth a second look before it is
+  worth an edit.
+
+  What the server exposes comes from `fda-config.json`, not from the fallback
+  block in `src/config/settings.ts`. Seven prompts are constructed and six are
+  enabled; `fda_weekly_surveillance_report` is off by design, and a test
+  asserts it stays hidden.
+
+- `tests/services/` covers the Orange Book parser against a synthetic ZIP built
+  in a temp directory. It doubles as the seam test for `adm-zip`, which the
+  parser is the only direct caller of, so a bump that changes `getEntries()`,
+  `entryName` or `getData()` fails here. The fixture data is invented and
+  describes no real application.
+
+- `tests/utils/` covers the cursor pagination behind every list response.
+
+No test reaches the network. The openFDA client and the resource fetchers are
+not covered yet; that needs an HTTP mocking seam the repo does not have.
+
 ## What's New: Orange Book & Purple Book Integration
 
 This server now includes comprehensive FDA Orange Book and Purple Book data for pharmaceutical intelligence:

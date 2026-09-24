@@ -39,6 +39,7 @@ export interface PaginationConfig {
 export class PaginationService {
   private readonly config: PaginationConfig;
   private readonly cursorCache = new Map<string, PaginationCursor>();
+  private cleanupTimer?: NodeJS.Timeout;
 
   constructor(config?: Partial<PaginationConfig>) {
     this.config = {
@@ -48,10 +49,23 @@ export class PaginationService {
       ...config
     };
 
-    // Clean up expired cursors periodically
-    setInterval(() => {
+    // Clean up expired cursors periodically. Unref'd so this housekeeping
+    // timer never on its own keeps the host process alive.
+    this.cleanupTimer = setInterval(() => {
       this.cleanExpiredCursors();
     }, this.config.cursorExpirationMs);
+    this.cleanupTimer.unref();
+  }
+
+  /**
+   * Stop the cleanup timer and drop all cached cursors
+   */
+  public dispose(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+    this.cursorCache.clear();
   }
 
   /**
